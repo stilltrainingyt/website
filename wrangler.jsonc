@@ -2,6 +2,10 @@
 {
   "name": "stilltraining",
   "compatibility_date": "2026-10-01",
+  // The site answers at stilltraining.stilltraining-ai.workers.dev, and each
+  // branch's preview at <branch>-stilltraining.stilltraining-ai.workers.dev.
+  "workers_dev": true,
+  "preview_urls": true,
   "assets": {
     "directory": "./dist",
     // Unknown addresses get dist/404.html with a 404 status.
