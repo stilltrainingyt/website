@@ -6,5 +6,8 @@
     "directory": "./dist",
     // Unknown addresses get dist/404.html with a 404 status.
     "not_found_handling": "404-page"
-  }
+  },
+  // Lets Cloudflare's preview builds (npx wrangler preview) give each pull request
+  // its own preview. Empty: previews use the settings above.
+  "previews": {}
 }
