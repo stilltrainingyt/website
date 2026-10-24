@@ -1,6 +1,9 @@
 # Same line endings on Windows, WSL and Cloudflare's Linux builds
 * text=auto eol=lf
 
+# The frozen design files are stored byte for byte, never normalised
+design-reference/** -text
+
 *.png binary
 *.webp binary
 *.woff2 binary

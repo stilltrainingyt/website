@@ -16,4 +16,5 @@ This is a personal site and isn't open to outside contributions.
 
 ## Licence
 
-Licence files are added with the first build step.
+- Code, design and visual assets: all rights reserved. See [LICENSE](LICENSE).
+- Articles, transcripts and video notes: [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/), credited to Pratyush P, Still Training. See [LICENSE-CONTENT](LICENSE-CONTENT).
