@@ -1,0 +1,16 @@
+# Private planning notes, kept on this laptop only
+Plan.pdf
+
+# Dependencies and build output
+node_modules/
+dist/
+.astro/
+.wrangler/
+
+# Local secrets
+.env*
+
+# OS files
+.DS_Store
+Thumbs.db
+desktop.ini
