@@ -10,6 +10,7 @@ Ideas outside the agreed scope. Nothing here is built unless you pick it.
 - Valty in the channel's thumbnails or wordmark: the same personal-use limit applies there.
 - Checking the renewal price of stilltraining.in.
 - Hindi pages, later.
+- `@types/node` as a development dependency, so editors type-check the tests (Playwright runs them fine without it).
 
 ## Found in the design files
 
