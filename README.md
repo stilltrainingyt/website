@@ -10,6 +10,20 @@ Source code for [stilltraining.in](https://stilltraining.in), the personal brand
 
 A static [Astro](https://astro.build) site, served by Cloudflare. No server or database of its own.
 
+## Tests
+
+Playwright compares every page with the two design files in `design-reference/`.
+
+```bash
+npx playwright install chromium   # once per machine
+npm run baselines                 # render the baselines from the design files (about 17 minutes)
+npm run test:visual               # compare against them
+npm run test:selfcheck            # prove small changes are caught
+npm run test:speed                # scroll and page-turn timing at 1×, 4× and 6× CPU slowdown
+```
+
+Chrome on Windows sometimes draws a few screens slightly differently for a whole run, so run `npm run baselines` two or three times: each run adds the renderings it sees, and the collection starts over when `design-reference/` changes.
+
 ## Contributions
 
 This is a personal site and isn't open to outside contributions.
