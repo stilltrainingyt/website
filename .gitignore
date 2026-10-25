@@ -7,6 +7,15 @@ dist/
 .astro/
 .wrangler/
 
+# Test output, and baselines rendered locally from design-reference/
+test-results/
+playwright-report/
+tests/visual/baselines/
+tests/speed/results/
+
+# Local settings of the Claude app and editors
+.claude/
+
 # Local secrets
 .env*
 
