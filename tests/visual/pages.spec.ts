@@ -1,34 +1,19 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import type { Page } from '@playwright/test';
-import { test, expect, PAGES, VIEWS, PAPERS, urlFor, open, scrollStops, scrollTo, restless } from '../targets';
+import { test, expect, PAGES, VIEWS, PAPERS, urlFor, open, scrollStops, scrollTo, restless, renderings, matchesARendering, masks, stableShot } from '../targets';
 
 // Every page, at every width, in both papers, one screen at a time from top to
 // bottom. `npm run baselines` renders the design files into baselines;
 // `npm run test:visual` compares against them.
 //
-// Chrome does not always draw the same page the same way: on a few screens the
-// edges of some letters come out slightly differently from one load to the next,
-// although every style and position on the page is identical. So a baseline is
-// every distinct rendering three loads of the design file produced, and a screen
-// passes only when it matches one of them pixel for pixel. A changed page matches
-// none of them. Screens with more than one rendering are named in the report.
+// A baseline keeps every distinct rendering the design file has produced, three
+// loads per baseline run, added up across runs (see renderings() in targets.ts),
+// and a screen passes only when it matches one of them pixel for pixel; a
+// changed page matches none of them. Screens with more than one rendering are
+// named in the report.
 
 const LOADS = 3;
-const SHOT_OPTIONS = { animations: 'disabled', caret: 'hide', scale: 'css' } as const;
-
-const mask = (page: Page) => [page.locator('[data-restless]')];
-
-// Like toHaveScreenshot: shoot until two shots in a row match.
-async function stableShot(page: Page): Promise<Buffer> {
-  let last = await page.screenshot({ ...SHOT_OPTIONS, mask: mask(page) });
-  for (let i = 0; i < 10; i++) {
-    const next = await page.screenshot({ ...SHOT_OPTIONS, mask: mask(page) });
-    if (next.equals(last)) return next;
-    last = next;
-  }
-  throw new Error('The screen never held still for two shots in a row');
-}
 
 // One load of the page, one stable screenshot per screen, each handed over while
 // the page is still showing that screen.
@@ -46,16 +31,6 @@ async function capture(page: Page, url: string, onShot?: (i: number, shot: Buffe
     shots.push(shot);
   }
   return shots;
-}
-
-// The first rendering is the name toHaveScreenshot uses; others get ~2, ~3.
-function variantFiles(primary: string): string[] {
-  const dir = path.dirname(primary);
-  const stem = path.basename(primary, '.png');
-  if (!fs.existsSync(dir)) return [];
-  return fs.readdirSync(dir)
-    .filter((f) => f === `${stem}.png` || (f.startsWith(`${stem}~`) && f.endsWith('.png')))
-    .map((f) => path.join(dir, f));
 }
 
 for (const view of VIEWS) {
@@ -86,22 +61,27 @@ for (const view of VIEWS) {
                 else distinct.push({ shot: load[i], seen: 1 });
               }
               distinct.sort((a, b) => b.seen - a.seen);
+              // Add the renderings earlier baseline runs have not seen (baselines-setup.ts
+              // starts over when the design files change).
               const primary = file(i);
               fs.mkdirSync(path.dirname(primary), { recursive: true });
-              variantFiles(primary).forEach((f) => fs.unlinkSync(f));
-              distinct.forEach((d, k) => fs.writeFileSync(k === 0 ? primary : primary.replace(/\.png$/, `~${k + 1}.png`), d.shot));
-              if (distinct.length > 1) {
-                testInfo.annotations.push({ type: 'renderings', description: `${name(i)}: ${distinct.length} (${distinct.map((d) => d.seen).join('/')} of ${LOADS} loads)` });
+              const known = renderings(primary).map((f) => fs.readFileSync(f));
+              for (const d of distinct) {
+                if (known.some((k) => k.equals(d.shot))) continue;
+                fs.writeFileSync(known.length === 0 ? primary : primary.replace(/\.png$/, `~${known.length + 1}.png`), d.shot);
+                known.push(d.shot);
+              }
+              if (known.length > 1) {
+                testInfo.annotations.push({ type: 'renderings', description: `${name(i)}: ${known.length} known, this run saw ${distinct.length} (${distinct.map((d) => d.seen).join('/')} of ${LOADS} loads)` });
               }
             }
             return;
           }
 
           await capture(page, url, async (i, shot) => {
-            const accepted = variantFiles(file(i)).map((f) => fs.readFileSync(f));
-            if (accepted.some((a) => a.equals(shot))) return;
+            if (matchesARendering(file(i), shot)) return;
             // No rendering matches: compare with the main one, which fails and saves the difference.
-            await expect.soft(page).toHaveScreenshot(name(i), { mask: mask(page) });
+            await expect.soft(page).toHaveScreenshot(name(i), { mask: masks(page) });
           });
         });
       }

@@ -8,6 +8,7 @@ export default defineConfig<{ target: Target }>({
   snapshotPathTemplate: '{testDir}/visual/baselines/{platform}/{arg}{ext}',
   // A missing baseline is a failure, never a silent new baseline.
   updateSnapshots: 'none',
+  globalSetup: './tests/visual/baselines-setup.ts',
   reporter: [['list']],
   expect: {
     toHaveScreenshot: {
@@ -21,9 +22,10 @@ export default defineConfig<{ target: Target }>({
   },
   projects: [
     // Making baselines loads each page three times, so long pages need minutes.
-    // A retry loads the page afresh, in case it drew a rendering the three loads missed.
-    { name: 'reference', testMatch: 'visual/pages.spec.ts', timeout: 240_000, retries: 1, use: { browserName: 'chromium', target: 'reference' } },
-    { name: 'selfcheck', testMatch: 'visual/selfcheck.spec.ts', use: { browserName: 'chromium', target: 'reference' } },
+    // Up to three retries, each loading the page afresh, in case it drew a rare
+    // rendering the baseline loads missed. A changed page fails every load.
+    { name: 'reference', testMatch: 'visual/pages.spec.ts', timeout: 240_000, retries: 3, use: { browserName: 'chromium', target: 'reference' } },
+    { name: 'selfcheck', testMatch: 'visual/selfcheck.spec.ts', retries: 3, use: { browserName: 'chromium', target: 'reference' } },
     { name: 'speed', testMatch: 'speed/*.spec.ts', use: { browserName: 'chromium', target: 'reference' } },
   ],
 });

@@ -1,6 +1,5 @@
 import fs from 'node:fs';
-import path from 'node:path';
-import { test, expect, VIEWS, urlFor, open, settle, restless, type PageName, type Paper } from '../targets';
+import { test, expect, VIEWS, urlFor, open, settle, restless, matchesARendering, masks, stableShot, type PageName, type Paper } from '../targets';
 
 // Proves the screenshot comparison catches small changes: each change below is
 // made to a design page in the browser, and comparing it with that page's
@@ -55,16 +54,18 @@ for (const { view, paper, pageName } of CASES) {
     });
 
     const shot = `${view.name}/${paper}/${pageName}/01.png`;
+    const baseline = () => test.info().snapshotPath(shot, { kind: 'screenshot' });
 
     test.beforeEach(async () => {
-      const baseline = path.join('tests', 'visual', 'baselines', process.platform, shot.replaceAll('/', '-'));
-      expect(fs.existsSync(baseline), `No baseline at ${baseline}; run npm run baselines first`).toBe(true);
+      expect(fs.existsSync(baseline()), `No baseline at ${baseline()}; run npm run baselines first`).toBe(true);
     });
 
     test('unchanged page matches its baseline', async ({ page, target }) => {
       await open(page, urlFor(target, view, pageName));
       await restless(page);
-      await expect(page).toHaveScreenshot(shot, { mask: [page.locator('[data-restless]')] });
+      if (!matchesARendering(baseline(), await stableShot(page))) {
+        await expect(page).toHaveScreenshot(shot, { mask: masks(page) });
+      }
     });
 
     for (const change of CHANGES) {
@@ -73,13 +74,7 @@ for (const { view, paper, pageName } of CASES) {
         await page.evaluate(change.apply);
         await settle(page);
         await restless(page);
-        let caught = false;
-        try {
-          await expect(page).toHaveScreenshot(shot, { mask: [page.locator('[data-restless]')], timeout: 3000 });
-        } catch {
-          caught = true;
-        }
-        expect(caught, `The comparison missed: ${change.name}`).toBe(true);
+        expect(matchesARendering(baseline(), await stableShot(page)), `The comparison missed: ${change.name}`).toBe(false);
       });
     }
   });

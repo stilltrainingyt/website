@@ -1,4 +1,5 @@
 import { test as base, type Page } from '@playwright/test';
+import fs from 'node:fs';
 import path from 'node:path';
 import { pathToFileURL } from 'node:url';
 
@@ -46,10 +47,8 @@ export async function open(page: Page, url: string): Promise<void> {
 
 export const test = base.extend<{ target: Target }>({
   target: ['reference', { option: true }],
-  // A fresh browser for every test. Chrome caches drawn letters per browser
-  // process, and how a letter was cached while showing earlier pages changes how
-  // its edges are drawn later, so a shared browser makes screenshots depend on
-  // which tests happened to run before.
+  // A fresh browser for every test, so one page's browser crash or leftover
+  // state cannot affect another page's screenshots.
   context: async ({ playwright, browserName, viewport, isMobile, hasTouch, colorScheme }, use) => {
     const browser = await playwright[browserName].launch();
     const context = await browser.newContext({ viewport, isMobile, hasTouch, colorScheme });
@@ -134,4 +133,36 @@ export async function restless(page: Page): Promise<string[]> {
 export async function scrollTo(page: Page, y: number): Promise<void> {
   await page.evaluate((top) => window.scrollTo({ top, behavior: 'instant' }), y);
   await settle(page);
+}
+
+// Chrome on Windows does not always draw the same page the same way: on a few
+// screens the edges of some letters come out slightly differently from one load
+// to the next, although every style and position is identical. A baseline is
+// therefore every distinct rendering its loads of the design file produced; the
+// first is the file toHaveScreenshot uses, the others get ~2, ~3 and so on.
+export function renderings(baseline: string): string[] {
+  const dir = path.dirname(baseline);
+  const stem = path.basename(baseline, '.png');
+  if (!fs.existsSync(dir)) return [];
+  return fs.readdirSync(dir)
+    .filter((f) => f === `${stem}.png` || (f.startsWith(`${stem}~`) && f.endsWith('.png')))
+    .map((f) => path.join(dir, f));
+}
+
+export function matchesARendering(baseline: string, shot: Buffer): boolean {
+  return renderings(baseline).some((f) => fs.readFileSync(f).equals(shot));
+}
+
+export const masks = (page: Page) => [page.locator('[data-restless]')];
+
+// Like toHaveScreenshot: shoot until two shots in a row match.
+export async function stableShot(page: Page): Promise<Buffer> {
+  const shoot = () => page.screenshot({ animations: 'disabled', caret: 'hide', scale: 'css', mask: masks(page) });
+  let last = await shoot();
+  for (let i = 0; i < 10; i++) {
+    const next = await shoot();
+    if (next.equals(last)) return next;
+    last = next;
+  }
+  throw new Error('The screen never held still for two shots in a row');
 }
