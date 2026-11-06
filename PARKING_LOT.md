@@ -16,6 +16,9 @@ Ideas outside the agreed scope. Nothing here is built unless you pick it.
 - IBM Plex Mono 2.003, from IBM's full `@ibm/plex` 6.x package (about 180 MB to download once), might match Google's Mono on the few Cyrillic letters where 2.004 differs. None of them are in the design.
 - In step 13, check the font rules in Firefox and WebKit as well: they were matched to the way Chrome picks a file for each character.
 - Steadier screenshots. A few text lines draw in one of two ways depending on when the fonts arrive, because Chrome fixes a layer's sub-pixel offset when it first builds it. The design files (fonts from Google) and the materials target (fonts from disk) land on each way in different proportions. Building the page only once its fonts are in might make every load draw the same, and let each screen's baseline shrink to one rendering.
+- Skip links that skip to each page's own first entry. The design's two skip links point at home-page entries (`#premise`, `#why`) on every page, so on other pages they lead nowhere.
+- A long cache lifetime for the hashed files under `/_astro/` in `public/_headers`. Their names change whenever their contents do, so browsers could keep them for a year.
+- Each edition's script and CSS downloaded only at its own widths (the other edition's 4 to 9 KB of script and 30 to 40 KB of CSS, before compression), if the speed tests ever ask for it.
 
 ## Found in the design files
 
@@ -23,3 +26,4 @@ Ideas outside the agreed scope. Nothing here is built unless you pick it.
 - The desktop's `.leaf` reads `var(--ly,0deg)`, but nothing sets `--ly`, so it is always 0deg. Perhaps a leftover, perhaps an effect that was never wired up.
 - The font link asks for Fraunces at 500 and 700, but every rule that uses the display font sets 700, so 500 is never drawn. Its rules stay as in the design; they share their files with 700, so they cost nothing.
 - On Windows, Chrome draws the edges of some letters slightly differently from one load to the next (the desktop deck at 1440 px on nearly every load, a few other screens rarely), although the page is identical. The screenshot test accepts every rendering the design file itself produced; running it in WSL2 may make it exact. Step 13's runs in Firefox and WebKit will show whether it is Chrome only.
+- Pocket's scroll handler works out which dock entry is current from `data-go` attributes the dock's buttons do not have, and never uses the result. The desktop's leaf handler likewise works out the nearest leaf and never uses it. Both are kept as written.
