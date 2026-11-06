@@ -25,6 +25,9 @@ export default defineConfig<{ target: Target }>({
     // Up to three retries, each loading the page afresh, in case it drew a rare
     // rendering the baseline loads missed. A changed page fails every load.
     { name: 'reference', testMatch: 'visual/pages.spec.ts', timeout: 240_000, retries: 3, use: { browserName: 'chromium', target: 'reference' } },
+    // The same screens drawn with the project's own tokens, fonts and images, compared with
+    // the same baselines; plus the checks on those materials themselves.
+    { name: 'materials', testMatch: ['visual/pages.spec.ts', 'visual/materials.spec.ts'], timeout: 240_000, retries: 3, use: { browserName: 'chromium', target: 'materials' } },
     { name: 'selfcheck', testMatch: 'visual/selfcheck.spec.ts', retries: 3, use: { browserName: 'chromium', target: 'reference' } },
     { name: 'speed', testMatch: 'speed/*.spec.ts', use: { browserName: 'chromium', target: 'reference' } },
   ],

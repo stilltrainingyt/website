@@ -8,6 +8,7 @@
     "preview": "astro preview",
     "baselines": "playwright test --project=reference --update-snapshots=all",
     "test:visual": "playwright test --project=reference",
+    "test:materials": "playwright test --project=materials",
     "test:selfcheck": "playwright test --project=selfcheck",
     "test:speed": "playwright test --project=speed --workers=1"
   },
