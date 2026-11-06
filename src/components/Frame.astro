@@ -1,0 +1,14 @@
+---
+// The journal's frame and paper, as in design-reference/: the desktop's double-rule frame with
+// its corners (pocket draws its frame from the same element's own border), the reading-progress
+// bar both share, pocket's top wire, the grain over everything, and the desktop's wire binding,
+// whose rings desktop.js draws.
+---
+<div class="frame" aria-hidden="true">
+  <i class="o-t"></i><i class="prog"></i><i class="o-b"></i><i class="o-l"></i><i class="o-r"></i>
+  <i class="i-t"></i><i class="i-b"></i><i class="i-l"></i><i class="i-r"></i>
+  <b class="c1"></b><b class="c2"></b><b class="c3"></b><b class="c4"></b>
+</div>
+<div class="wire" id="wire" aria-hidden="true" data-edition="pocket"></div>
+<div class="grain" aria-hidden="true"></div>
+<div class="bind" id="bind" aria-hidden="true" data-edition="desktop"></div>

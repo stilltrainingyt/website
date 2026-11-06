@@ -1,0 +1,61 @@
+---
+// The journal both editions share, around one page: markup as in design-reference/, with each
+// edition's own parts marked data-edition. desktop.css applies from 900 px wide and pocket.css
+// below; edition.css hides the other edition's parts; each edition's script runs only at its
+// own widths, and edition.js loads the page again when the width crosses 900 px.
+import wrapperCss from '../styles/wrapper.css?raw';
+import editionCss from '../styles/edition.css?raw';
+import tokensCss from '../styles/tokens.css?url';
+import desktopCss from '../styles/desktop.css?url';
+import pocketCss from '../styles/pocket.css?url';
+import editionJs from '../scripts/edition.js?raw';
+import desktopJs from '../scripts/desktop.js?url';
+import pocketJs from '../scripts/pocket.js?url';
+import Frame from '../components/Frame.astro';
+import Tabs from '../components/Tabs.astro';
+import Dock from '../components/Dock.astro';
+import PageStrip from '../components/PageStrip.astro';
+import { DESKTOP_FROM, routeOf, type PageName } from '../components/nav';
+
+interface Props { page: PageName }
+const { page } = Astro.props;
+const current = routeOf(page);
+
+// Until each page's own step names it for search (ASSUMPTIONS.md, step 3).
+const TITLES: Record<PageName, string> = {
+  home: 'StillTraining', episodes: 'Episodes · StillTraining', episode: 'Episode · StillTraining',
+  writing: 'Writing · StillTraining', article: 'Writing · StillTraining', projects: 'Projects · StillTraining',
+  about: 'About · StillTraining', subscribe: 'Subscribe · StillTraining', missing: 'Page not found · StillTraining',
+};
+---
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="robots" content="noindex">
+<title>{TITLES[page]}</title>
+<style is:inline set:html={wrapperCss}></style>
+<link rel="stylesheet" href={tokensCss}>
+<link rel="stylesheet" href={desktopCss} media={DESKTOP_FROM}>
+<link rel="stylesheet" href={pocketCss} media={`not all and ${DESKTOP_FROM}`}>
+<style is:inline set:html={editionCss}></style>
+</head>
+<body>
+<a class="skip" href="#premise" data-edition="desktop">Skip to the first entry</a>
+<a class="skip" href="#why" data-edition="pocket">Skip to the first page</a>
+<Frame />
+<Tabs current={current} />
+<button class="toggle" id="themeBtn" aria-pressed="false" data-edition="desktop">Lamp off</button>
+<Dock current={current} />
+<main class="shell">
+<PageStrip current={current} />
+<div class="pages">
+<div class="page" data-page={page}><slot /></div>
+</div>
+</main>
+<script is:inline set:html={editionJs}></script>
+<script is:inline src={desktopJs}></script>
+<script is:inline src={pocketJs}></script>
+</body>
+</html>

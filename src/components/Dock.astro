@@ -1,0 +1,16 @@
+---
+// Pocket's thumb dock, as in design-reference/pocket.html, with the current page lit as the
+// design's router lights it.
+import { currentAttr, type Route } from './nav';
+
+interface Props { current: Route | '' }
+const { current } = Astro.props;
+---
+<nav class="dock" aria-label="Pages" data-edition="pocket">
+  <button type="button" data-route="home" aria-current={currentAttr('home', current)}>Home</button>
+  <button type="button" data-route="episodes" aria-current={currentAttr('episodes', current)}>Episodes</button>
+  <button type="button" data-route="writing" aria-current={currentAttr('writing', current)}>Writing</button>
+  <button type="button" data-route="projects" aria-current={currentAttr('projects', current)}>Projects</button>
+  <button type="button" data-route="about" aria-current={currentAttr('about', current)}>About</button>
+  <button type="button" data-route="subscribe" aria-current={currentAttr('subscribe', current)}>Join</button>
+</nav>
