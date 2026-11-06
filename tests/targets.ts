@@ -1,7 +1,8 @@
-import { test as base, type Page } from '@playwright/test';
+import { test as base, type BrowserContext, type Page } from '@playwright/test';
 import fs from 'node:fs';
 import path from 'node:path';
 import { pathToFileURL } from 'node:url';
+import { designHtml, materialPage, PUBLIC_DIR, TOKENS_CSS, type Edition } from './visual/materials';
 
 // The nine pages of the design files, by their data-page names.
 export const PAGES = [
@@ -21,15 +22,36 @@ export type View = (typeof VIEWS)[number];
 export const PAPERS = ['light', 'dark'] as const;
 export type Paper = (typeof PAPERS)[number];
 
-// What is under test: the design files themselves, or (from step 3) the built site.
-export type Target = 'reference' | 'site';
+// What is under test: the design files themselves; the design files drawn with the
+// project's own materials (tokens.css, public/fonts, public/images) in place of their own;
+// or (from step 3) the built site.
+export type Target = 'reference' | 'materials' | 'site';
+
+export const MATERIALS_ORIGIN = 'http://materials.test';
 
 export function urlFor(target: Target, view: View, pageName: PageName): string {
   if (target === 'reference') {
     const file = path.resolve('design-reference', view.file);
     return `${pathToFileURL(file).href}#${pageName}`;
   }
+  if (target === 'materials') return `${MATERIALS_ORIGIN}/${view.file}#${pageName}`;
   throw new Error('The site target arrives with the shell in step 3.');
+}
+
+// Serves the materials target: each design file with its Google Fonts link, token blocks and
+// Echo images swapped for the project's (see materialPage), and the project's files at the
+// addresses the site will use. Google Fonts is cut off, so nothing can come from there.
+export async function serveMaterials(context: BrowserContext): Promise<void> {
+  await context.route(/^https:\/\/fonts\.(googleapis|gstatic)\.com\//, (route) => route.abort());
+  await context.route(`${MATERIALS_ORIGIN}/**`, (route) => {
+    const { pathname } = new URL(route.request().url());
+    const page = /^\/(desktop|pocket)\.html$/.exec(pathname);
+    if (page) return route.fulfill({ contentType: 'text/html; charset=utf-8', body: materialPage(designHtml(page[1] as Edition)) });
+    if (pathname === '/styles/tokens.css') return route.fulfill({ path: TOKENS_CSS, contentType: 'text/css; charset=utf-8' });
+    const file = path.join(PUBLIC_DIR, decodeURIComponent(pathname));
+    if (file.startsWith(PUBLIC_DIR + path.sep) && fs.existsSync(file) && fs.statSync(file).isFile()) return route.fulfill({ path: file });
+    return route.fulfill({ status: 404, contentType: 'text/plain', body: 'Not found' });
+  });
 }
 
 // Open a page for screenshots. Chrome keeps the fractional pixel offset a 3D
@@ -49,9 +71,10 @@ export const test = base.extend<{ target: Target }>({
   target: ['reference', { option: true }],
   // A fresh browser for every test, so one page's browser crash or leftover
   // state cannot affect another page's screenshots.
-  context: async ({ playwright, browserName, viewport, isMobile, hasTouch, colorScheme }, use) => {
+  context: async ({ playwright, browserName, viewport, isMobile, hasTouch, colorScheme, target }, use) => {
     const browser = await playwright[browserName].launch();
     const context = await browser.newContext({ viewport, isMobile, hasTouch, colorScheme });
+    if (target === 'materials') await serveMaterials(context);
     await use(context);
     await browser.close();
   },
