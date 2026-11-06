@@ -1,3 +1,5 @@
+import fs from 'node:fs';
+import path from 'node:path';
 import { designHtml, styleBlocks, tokenBlocks, type Edition } from './materials';
 
 // The design's CSS and scripts as the site carries them (src/styles, src/scripts), and the
@@ -62,6 +64,39 @@ export type Change = { script: Script; from: string; to: string; times: number; 
 
 const REDUCE = 'var reduce=window.matchMedia&&window.matchMedia("(prefers-reduced-motion: reduce)").matches;';
 
+// Step 4 (your decision): the router's page-showing code (paint, jump, show) stays as written,
+// and the parts that turned pages by #hash give way to the site's addresses. The design's go
+// function becomes the block between these two lines of src/scripts/router.js, the site's own
+// code; its hashchange listener becomes a popstate listener, so Back and Forward replay the
+// turn; and its start-up shows the file's own page, at the entry its address names.
+export const ADDRESS_BLOCK = {
+  open: "  /* ---- every page has its own address (the site's own code, step 4) ---- */\n",
+  close: '  /* ---- end of the addresses ---- */\n',
+};
+
+export function addressBlock(): string {
+  const js = fs.readFileSync(path.resolve('src/scripts/router.js'), 'utf8');
+  const open = js.indexOf(ADDRESS_BLOCK.open);
+  const close = js.indexOf(ADDRESS_BLOCK.close);
+  if (open < 0 || close < open || js.indexOf(ADDRESS_BLOCK.open, open + 1) >= 0) throw new Error('router.js: expected one address block');
+  return js.slice(open, close + ADDRESS_BLOCK.close.length);
+}
+
+const ROUTER_GO = `  function go(route,then){
+    if((location.hash||"").slice(1)===route){show(route,then);return;}
+    pendingThen=then||null; location.hash=route;
+  }
+`;
+const ROUTER_HASHCHANGE = `  window.addEventListener("hashchange",function(){var r=(location.hash||"").slice(1)||"home"; var th=pendingThen; pendingThen=null;
+    if(!pages[r]&&document.getElementById(r)&&pages.home.contains(document.getElementById(r))){show("home",r);return;}
+    show(r,th);});
+`;
+const ROUTER_START = `  if(!start)show("home");
+  else if(pages[start])show(start);
+  else if(document.getElementById(start)&&pages.home.contains(document.getElementById(start)))show("home",start);
+  else show("missing");
+`;
+
 // Every changed line. `times` is how often `from` occurs in the script.
 export const SCRIPT_CHANGES: Change[] = [
   { script: 'desktop', from: REDUCE, to: 'var reduce=false;', times: 2, why: 'allowed change 1: reduce is always off' },
@@ -75,6 +110,9 @@ export const SCRIPT_CHANGES: Change[] = [
   { script: 'pocket', from: '  var leaves=all("[data-leaf]"), cover=$("cover"), echoWrap=$("echoWrap"), wire=$("wire"), queued=false;\n', to: '  var leaves=all("[data-leaf]"), cover=$("cover"), echoWrap=$("echoWrap"), wire=$("wire"), queued=false;\n  var frame=document.querySelector(".frame");\n', times: 1, why: 'allowed change 2: the scroll value goes on the frame' },
   { script: 'pocket', from: 'root.style.setProperty("--sp",', to: 'frame.style.setProperty("--sp",', times: 1, why: 'allowed change 2: the scroll value goes on the frame' },
   { script: 'router', from: REDUCE, to: 'var reduce=false;', times: 1, why: 'allowed change 1: reduce is always off' },
+  { script: 'router', from: ROUTER_GO, to: addressBlock(), times: 1, why: 'every page has its own address (your decision, step 4): go fetches and places the next page, then turns to it' },
+  { script: 'router', from: ROUTER_HASHCHANGE, to: '  window.addEventListener("popstate",function(){if(location.pathname!==shownAt)turn(location.pathname,null,false);});\n', times: 1, why: 'every page has its own address (your decision, step 4): Back and Forward replay the turn' },
+  { script: 'router', from: ROUTER_START, to: '  show(Object.keys(pages)[0],start&&document.getElementById(start)?start:null);\n', times: 1, why: 'every page has its own address (your decision, step 4): a visitor arriving at any address sees that page directly' },
 ];
 
 export function changedScripts(script: Script): string {

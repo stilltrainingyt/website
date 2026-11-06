@@ -75,7 +75,7 @@ test.describe('as built', () => {
     for (const stem of ['tokens', 'desktop', 'pocket']) expect(builtFile(named(stem)!.href).equals(Buffer.from(src(`styles/${stem}.css`)))).toBe(true);
 
     const scripts = [...page.matchAll(/<script src="([^"]+)"><\/script>/g)].map((m) => m[1]);
-    expect(scripts.map((s) => path.posix.basename(s).split('.')[0])).toEqual(['desktop', 'pocket']);
+    expect(scripts.map((s) => path.posix.basename(s).split('.')[0])).toEqual(['desktop', 'pocket', 'router']);
     for (const s of scripts) expect(builtFile(s).equals(Buffer.from(src(`scripts/${path.posix.basename(s).split('.')[0]}.js`)))).toBe(true);
 
     // The two small files ride inside the page, unchanged.
