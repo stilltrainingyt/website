@@ -24,10 +24,22 @@ export type Paper = (typeof PAPERS)[number];
 
 // What is under test: the design files themselves; the design files drawn with the
 // project's own materials (tokens.css, public/fonts, public/images) in place of their own;
-// or (from step 3) the built site.
+// or the built site.
 export type Target = 'reference' | 'materials' | 'site';
 
 export const MATERIALS_ORIGIN = 'http://materials.test';
+export const SITE_ORIGIN = 'http://site.test';
+export const SITE_DIR = path.resolve('dist');
+
+// The site's address for each design page. Episode and article pages get theirs from the
+// content files; any address the site does not have shows the missing page.
+export const ADDRESSES: Partial<Record<PageName, string>> = {
+  home: '/', episodes: '/episodes/', writing: '/writing/', projects: '/projects/',
+  about: '/about/', subscribe: '/subscribe/', missing: '/torn-out/',
+};
+
+// The pages with an address of their own while they are empty (step 3).
+export const SHELL_PAGES: PageName[] = ['home', 'episodes', 'writing', 'projects', 'about', 'subscribe', 'missing'];
 
 export function urlFor(target: Target, view: View, pageName: PageName): string {
   if (target === 'reference') {
@@ -35,7 +47,9 @@ export function urlFor(target: Target, view: View, pageName: PageName): string {
     return `${pathToFileURL(file).href}#${pageName}`;
   }
   if (target === 'materials') return `${MATERIALS_ORIGIN}/${view.file}#${pageName}`;
-  throw new Error('The site target arrives with the shell in step 3.');
+  const address = ADDRESSES[pageName];
+  if (!address) throw new Error(`The site has no ${pageName} page until its content arrives.`);
+  return `${SITE_ORIGIN}${address}`;
 }
 
 // Serves the materials target: each design file with its Google Fonts link, token blocks and
@@ -51,6 +65,18 @@ export async function serveMaterials(context: BrowserContext): Promise<void> {
     const file = path.join(PUBLIC_DIR, decodeURIComponent(pathname));
     if (file.startsWith(PUBLIC_DIR + path.sep) && fs.existsSync(file) && fs.statSync(file).isFile()) return route.fulfill({ path: file });
     return route.fulfill({ status: 404, contentType: 'text/plain', body: 'Not found' });
+  });
+}
+
+// Serves the built site (dist/, from `astro build`) the way Cloudflare does: an address ending
+// in / is its folder's index.html, and an address with no file gets 404.html with a 404 status.
+export async function serveSite(context: BrowserContext): Promise<void> {
+  if (!fs.existsSync(path.join(SITE_DIR, 'index.html'))) throw new Error('No built site in dist/: run `npm run build` first.');
+  await context.route(`${SITE_ORIGIN}/**`, (route) => {
+    const { pathname } = new URL(route.request().url());
+    const file = path.join(SITE_DIR, decodeURIComponent(pathname), pathname.endsWith('/') ? 'index.html' : '');
+    if (file.startsWith(SITE_DIR + path.sep) && fs.existsSync(file) && fs.statSync(file).isFile()) return route.fulfill({ path: file });
+    return route.fulfill({ status: 404, path: path.join(SITE_DIR, '404.html') });
   });
 }
 
@@ -75,6 +101,7 @@ export const test = base.extend<{ target: Target }>({
     const browser = await playwright[browserName].launch();
     const context = await browser.newContext({ viewport, isMobile, hasTouch, colorScheme });
     if (target === 'materials') await serveMaterials(context);
+    if (target === 'site') await serveSite(context);
     await use(context);
     await browser.close();
   },
