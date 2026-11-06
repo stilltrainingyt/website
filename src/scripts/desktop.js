@@ -1,7 +1,8 @@
 /* The desktop edition's scripts from design-reference/desktop.html, in the design's order,
    run only from 900 px wide. They differ from the design only as tests/visual/port.ts lists:
-   the allowed changes, the paper choice saved in pocket's format, and lines left out until the
-   page they need arrives. The page router comes over in step 4. */
+   the allowed changes, the paper choice saved in pocket's format, each page's parts found
+   again in every page a turn places (router.js), and lines left out until the page they need
+   arrives. */
 if(window.matchMedia("(min-width:900px)").matches){
 (function(){
   "use strict";
@@ -70,9 +71,11 @@ if(window.matchMedia("(min-width:900px)").matches){
   if(!reduce){window.addEventListener("scroll",onScroll,{passive:true});}
   window.addEventListener("resize",function(){rings();onScroll();},{passive:true});
   frame();
+  window.addEventListener("st:placed",function(){leaves=Array.prototype.slice.call(document.querySelectorAll("[data-leaf]"));frame();});
 
   if(!reduce){
-    var tilts=Array.prototype.slice.call(document.querySelectorAll("[data-tilt]"));
+    function tiltParts(scope){
+    var tilts=Array.prototype.slice.call(scope.querySelectorAll("[data-tilt]"));
     tilts.forEach(function(card){
       card.addEventListener("pointermove",function(ev){
         var r=card.getBoundingClientRect();
@@ -81,6 +84,8 @@ if(window.matchMedia("(min-width:900px)").matches){
       });
       card.addEventListener("pointerleave",function(){card.style.transform="translate3d(0,0,0)";});
     });
+    }
+    tiltParts(document); window.addEventListener("st:placed",function(e){tiltParts(e.detail);});
     var wrap=document.getElementById("echoWrap");
     var echoes=[document.getElementById("echoLt"),document.getElementById("echoDk")];
   }
@@ -97,7 +102,8 @@ if(window.matchMedia("(min-width:900px)").matches){
   function save(k,v){try{localStorage.setItem(k,JSON.stringify(v));}catch(e){}}
 
   /* ---- loose things: drag with a pointer, nudge with arrow keys, double-click to put back ---- */
-  all("[data-drag]").forEach(function(el){
+  function dragParts(scope){
+  all("[data-drag]",scope).forEach(function(el){
     var x=0,y=0,sx=0,sy=0,on=false;
     function put(){el.style.setProperty("--dx",x+"px");el.style.setProperty("--dy",y+"px");}
     el.addEventListener("pointerdown",function(e){
@@ -114,9 +120,12 @@ if(window.matchMedia("(min-width:900px)").matches){
       else if(e.key==="Escape"){x=0;y=0;put();}
     });
   });
+  }
+  dragParts(document); window.addEventListener("st:placed",function(e){dragParts(e.detail);});
 
   /* ---- track cards turn over ---- */
-  all(".flipcard").forEach(function(card){
+  function cardParts(scope){
+  all(".flipcard",scope).forEach(function(card){
     var front=card.querySelector(".front"), back=card.querySelector(".back");
     back.setAttribute("inert","");
     all("[data-flip]",card).forEach(function(b){
@@ -128,6 +137,8 @@ if(window.matchMedia("(min-width:900px)").matches){
       });
     });
   });
+  }
+  cardParts(document); window.addEventListener("st:placed",function(e){cardParts(e.detail);});
 
   /* ---- number keys jump between entries ---- */
   var ids=["cover","premise","tracks","byhand","log","files","tearoff","colophon"];
@@ -147,7 +158,10 @@ if(window.matchMedia("(min-width:900px)").matches){
   var deck=document.getElementById("deck"), cover=document.getElementById("cover"),
       echo=document.getElementById("echoWrap"), bind=document.getElementById("bind"),
       stamp=document.querySelector(".stamp");
-  Array.prototype.forEach.call(document.querySelectorAll(".swatches .sw"),function(s,i){s.style.setProperty("--i",String(i+1));});
+  function swatchParts(scope){
+  Array.prototype.forEach.call(scope.querySelectorAll(".swatches .sw"),function(s,i){s.style.setProperty("--i",String(i+1));});
+  }
+  swatchParts(document); window.addEventListener("st:placed",function(e){swatchParts(e.detail);});
   function clamp(v){return v<0?0:v>1?1:v;}
   function ease(t){return 1-Math.pow(1-t,3);}
   var queued=false;
@@ -171,16 +185,21 @@ if(window.matchMedia("(min-width:900px)").matches){
   window.addEventListener("scroll",ask,{passive:true});
   window.addEventListener("resize",ask,{passive:true});
   run();
+  window.addEventListener("st:placed",function(){leaves=Array.prototype.slice.call(document.querySelectorAll("[data-leaf]"));run();});
+  function stampParts(stamp){
   if(stamp&&window.IntersectionObserver){
     new IntersectionObserver(function(es){es.forEach(function(e){
       if(e.isIntersecting){stamp.classList.remove("inked"); void stamp.offsetWidth; stamp.classList.add("inked");}
     });},{threshold:0.9}).observe(stamp);
   }
+  }
+  stampParts(stamp); window.addEventListener("st:placed",function(e){stampParts(e.detail.querySelector(".stamp"));});
 })();
 
 (function(){
   "use strict";
-  Array.prototype.forEach.call(document.querySelectorAll(".folder"),function(f){
+  function folderParts(scope){
+  Array.prototype.forEach.call(scope.querySelectorAll(".folder"),function(f){
     var d=document.getElementById(f.getAttribute("aria-controls")), hint=f.querySelector(".f-hint");
     Array.prototype.forEach.call(d.querySelectorAll(".sheet"),function(s,i){s.style.setProperty("--n",String(i));});
     f.addEventListener("click",function(){
@@ -190,5 +209,7 @@ if(window.matchMedia("(min-width:900px)").matches){
       if(open){requestAnimationFrame(function(){d.scrollIntoView({behavior:"smooth",block:"nearest"});});}
     });
   });
+  }
+  folderParts(document); window.addEventListener("st:placed",function(e){folderParts(e.detail);});
 })();
 }

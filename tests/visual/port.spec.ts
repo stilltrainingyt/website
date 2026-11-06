@@ -26,8 +26,10 @@ test.describe('as written', () => {
   for (const script of SCRIPTS) {
     test(`${script}.js is the design's ${script === 'router' ? 'page router' : 'scripts'} with only the listed changes and omissions`, () => {
       expect(withoutHeader(src(`scripts/${script}.js`))).toBe(portedScript(script));
+      // Every line a change adds is there (the line it was anchored on may wait with its page).
       for (const c of SCRIPT_CHANGES.filter((x) => x.script === script && x.to)) {
-        expect(src(`scripts/${script}.js`), c.why).toContain(c.to);
+        const before = c.from.split('\n');
+        for (const line of c.to.split('\n').filter((l) => l && !before.includes(l))) expect(src(`scripts/${script}.js`), c.why).toContain(line);
       }
       const { left } = omit(changedScripts(script), OMITTED.filter((o) => o.script === script));
       for (const needs of new Set(OMITTED.filter((o) => o.script === script).map((o) => o.needs))) {
