@@ -15,6 +15,7 @@ Ideas outside the agreed scope. Nothing here is built unless you pick it.
 - Preloading the Latin1 font files the home page draws first, if step 3's speed test shows fonts holding up the largest paint.
 - IBM Plex Mono 2.003, from IBM's full `@ibm/plex` 6.x package (about 180 MB to download once), might match Google's Mono on the few Cyrillic letters where 2.004 differs. None of them are in the design.
 - In step 13, check the font rules in Firefox and WebKit as well: they were matched to the way Chrome picks a file for each character.
+- Steadier screenshots. A few text lines draw in one of two ways depending on when the fonts arrive, because Chrome fixes a layer's sub-pixel offset when it first builds it. The design files (fonts from Google) and the materials target (fonts from disk) land on each way in different proportions. Building the page only once its fonts are in might make every load draw the same, and let each screen's baseline shrink to one rendering.
 
 ## Found in the design files
 
