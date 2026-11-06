@@ -42,38 +42,46 @@ export const wrapperCss = (): string => styleBlocks(designHtml('desktop')).wrapp
 // ---------------------------------------------------------------------------
 // Scripts
 
-// Each edition's scripts in the design's order, without the page router (the same in both
-// files; step 4 ports it).
-export function designScripts(edition: Edition): string {
-  return [...designHtml(edition).matchAll(/<script[^>]*>([\s\S]*?)<\/script>/g)]
-    .map((m) => m[1])
-    .filter((js) => !js.includes('window.stGo='))
-    .join('');
+// The site's three scripts: each edition's own, and the page router both editions share.
+export type Script = Edition | 'router';
+export const SCRIPTS: Script[] = ['desktop', 'pocket', 'router'];
+
+const scriptBlocks = (edition: Edition) => [...designHtml(edition).matchAll(/<script[^>]*>([\s\S]*?)<\/script>/g)].map((m) => m[1]);
+const isRouter = (js: string) => js.includes('window.stGo=');
+
+// Each edition's scripts in the design's order, without the page router; or the router, which
+// is the last script of both files and the same in each.
+export function designScripts(script: Script): string {
+  if (script !== 'router') return scriptBlocks(script).filter((js) => !isRouter(js)).join('');
+  const [desktop, pocket] = (['desktop', 'pocket'] as const).map((e) => scriptBlocks(e).filter(isRouter));
+  if (desktop.length !== 1 || pocket.length !== 1 || desktop[0] !== pocket[0]) throw new Error('expected one page router, the same in both design files');
+  return desktop[0];
 }
 
-export type Change = { edition: Edition; from: string; to: string; times: number; why: string };
+export type Change = { script: Script; from: string; to: string; times: number; why: string };
 
 const REDUCE = 'var reduce=window.matchMedia&&window.matchMedia("(prefers-reduced-motion: reduce)").matches;';
 
-// Every changed line. `times` is how often `from` occurs in the edition's scripts.
+// Every changed line. `times` is how often `from` occurs in the script.
 export const SCRIPT_CHANGES: Change[] = [
-  { edition: 'desktop', from: REDUCE, to: 'var reduce=false;', times: 2, why: 'allowed change 1: reduce is always off' },
-  { edition: 'desktop', from: '  if(window.matchMedia&&window.matchMedia("(prefers-reduced-motion: reduce)").matches)return;\n', to: '', times: 1, why: 'allowed change 1: the scroll effects no longer stop for reduced motion' },
-  { edition: 'desktop', from: 'behavior:window.matchMedia("(prefers-reduced-motion: reduce)").matches?"auto":"smooth"', to: 'behavior:"smooth"', times: 1, why: 'allowed change 1: folders always scroll smoothly' },
-  { edition: 'desktop', from: '  var deck=document.getElementById("deck"),', to: '  var frame=document.querySelector(".frame");\n  var deck=document.getElementById("deck"),', times: 1, why: 'allowed change 2: the scroll value goes on the frame' },
-  { edition: 'desktop', from: 'root.style.setProperty("--sp",', to: 'frame.style.setProperty("--sp",', times: 1, why: 'allowed change 2: the scroll value goes on the frame' },
-  { edition: 'desktop', from: 'try{var s=localStorage.getItem("st-theme");', to: 'try{var s=JSON.parse(localStorage.getItem("st-theme"));', times: 1, why: 'paper choice kept in pocket\'s format (your decision, step 3)' },
-  { edition: 'desktop', from: 'try{localStorage.setItem("st-theme",next);}', to: 'try{localStorage.setItem("st-theme",JSON.stringify(next));}', times: 1, why: 'paper choice kept in pocket\'s format (your decision, step 3)' },
-  { edition: 'pocket', from: REDUCE, to: 'var reduce=false;', times: 1, why: 'allowed change 1: reduce is always off' },
-  { edition: 'pocket', from: '  var leaves=all("[data-leaf]"), cover=$("cover"), echoWrap=$("echoWrap"), wire=$("wire"), queued=false;\n', to: '  var leaves=all("[data-leaf]"), cover=$("cover"), echoWrap=$("echoWrap"), wire=$("wire"), queued=false;\n  var frame=document.querySelector(".frame");\n', times: 1, why: 'allowed change 2: the scroll value goes on the frame' },
-  { edition: 'pocket', from: 'root.style.setProperty("--sp",', to: 'frame.style.setProperty("--sp",', times: 1, why: 'allowed change 2: the scroll value goes on the frame' },
+  { script: 'desktop', from: REDUCE, to: 'var reduce=false;', times: 2, why: 'allowed change 1: reduce is always off' },
+  { script: 'desktop', from: '  if(window.matchMedia&&window.matchMedia("(prefers-reduced-motion: reduce)").matches)return;\n', to: '', times: 1, why: 'allowed change 1: the scroll effects no longer stop for reduced motion' },
+  { script: 'desktop', from: 'behavior:window.matchMedia("(prefers-reduced-motion: reduce)").matches?"auto":"smooth"', to: 'behavior:"smooth"', times: 1, why: 'allowed change 1: folders always scroll smoothly' },
+  { script: 'desktop', from: '  var deck=document.getElementById("deck"),', to: '  var frame=document.querySelector(".frame");\n  var deck=document.getElementById("deck"),', times: 1, why: 'allowed change 2: the scroll value goes on the frame' },
+  { script: 'desktop', from: 'root.style.setProperty("--sp",', to: 'frame.style.setProperty("--sp",', times: 1, why: 'allowed change 2: the scroll value goes on the frame' },
+  { script: 'desktop', from: 'try{var s=localStorage.getItem("st-theme");', to: 'try{var s=JSON.parse(localStorage.getItem("st-theme"));', times: 1, why: 'paper choice kept in pocket\'s format (your decision, step 3)' },
+  { script: 'desktop', from: 'try{localStorage.setItem("st-theme",next);}', to: 'try{localStorage.setItem("st-theme",JSON.stringify(next));}', times: 1, why: 'paper choice kept in pocket\'s format (your decision, step 3)' },
+  { script: 'pocket', from: REDUCE, to: 'var reduce=false;', times: 1, why: 'allowed change 1: reduce is always off' },
+  { script: 'pocket', from: '  var leaves=all("[data-leaf]"), cover=$("cover"), echoWrap=$("echoWrap"), wire=$("wire"), queued=false;\n', to: '  var leaves=all("[data-leaf]"), cover=$("cover"), echoWrap=$("echoWrap"), wire=$("wire"), queued=false;\n  var frame=document.querySelector(".frame");\n', times: 1, why: 'allowed change 2: the scroll value goes on the frame' },
+  { script: 'pocket', from: 'root.style.setProperty("--sp",', to: 'frame.style.setProperty("--sp",', times: 1, why: 'allowed change 2: the scroll value goes on the frame' },
+  { script: 'router', from: REDUCE, to: 'var reduce=false;', times: 1, why: 'allowed change 1: reduce is always off' },
 ];
 
-export function changedScripts(edition: Edition): string {
-  let js = designScripts(edition);
-  for (const c of SCRIPT_CHANGES.filter((x) => x.edition === edition)) {
+export function changedScripts(script: Script): string {
+  let js = designScripts(script);
+  for (const c of SCRIPT_CHANGES.filter((x) => x.script === script)) {
     const times = js.split(c.from).length - 1;
-    if (times !== c.times) throw new Error(`${edition}: expected ${c.times} of ${JSON.stringify(c.from)}, found ${times}`);
+    if (times !== c.times) throw new Error(`${script}: expected ${c.times} of ${JSON.stringify(c.from)}, found ${times}`);
     js = js.split(c.from).join(c.to);
   }
   return js;
@@ -83,27 +91,29 @@ export function changedScripts(edition: Edition): string {
 // the page named in `needs`. A `section` is a whole titled section of the design's script,
 // from its title to the next title or the end of its script; otherwise `lines` lines from
 // the line starting with `from`.
-export type Omission = { edition: Edition; needs: string } & ({ section: string } | { from: string; lines: number });
+export type Omission = { script: Script; needs: string } & ({ section: string } | { from: string; lines: number });
 
 export const OMITTED: Omission[] = [
-  { edition: 'desktop', needs: 'home', from: 'wrap.addEventListener("pointermove",function(ev){', lines: 11 },
-  { edition: 'desktop', needs: 'home', section: '/* ---- the tear ---- */' },
-  { edition: 'desktop', needs: 'home', section: '/* ---- the slip itself ---- */' },
-  { edition: 'desktop', needs: 'home', section: '/* ---- Echo: one more episode ---- */' },
-  { edition: 'desktop', needs: 'home', section: '/* ---- the pad: four pages, turned over the top ---- */' },
-  { edition: 'desktop', needs: 'home', section: '/* ---- by hand: gradient descent on loss = (weight - 3) squared ---- */' },
-  { edition: 'desktop', needs: 'home', section: '/* ---- the log: filter by track, stamp what you want to watch ---- */' },
-  { edition: 'desktop', needs: 'home', section: '/* ---- tape the slip back on ---- */' },
-  { edition: 'desktop', needs: 'home', from: 'var d=deck.getBoundingClientRect();', lines: 4 },
-  { edition: 'pocket', needs: 'home', from: 'var cr=cover.getBoundingClientRect();', lines: 1 },
-  { edition: 'pocket', needs: 'about', from: 'var stamp=$("stamp");', lines: 3 },
-  { edition: 'pocket', needs: 'home', section: '/* Echo */' },
-  { edition: 'pocket', needs: 'home', section: '/* pad */' },
-  { edition: 'pocket', needs: 'home', section: '/* loose note */' },
-  { edition: 'pocket', needs: 'home', from: 'rail.addEventListener("scroll",function(){', lines: 5 },
-  { edition: 'pocket', needs: 'home', section: '/* by hand: loss = (weight - 3) squared */' },
-  { edition: 'pocket', needs: 'home', section: '/* log */' },
-  { edition: 'pocket', needs: 'home', section: '/* the slip: pull down, or press, to tear */' },
+  { script: 'desktop', needs: 'home', from: 'wrap.addEventListener("pointermove",function(ev){', lines: 11 },
+  { script: 'desktop', needs: 'home', section: '/* ---- the tear ---- */' },
+  { script: 'desktop', needs: 'home', section: '/* ---- the slip itself ---- */' },
+  { script: 'desktop', needs: 'home', section: '/* ---- Echo: one more episode ---- */' },
+  { script: 'desktop', needs: 'home', section: '/* ---- the pad: four pages, turned over the top ---- */' },
+  { script: 'desktop', needs: 'home', section: '/* ---- by hand: gradient descent on loss = (weight - 3) squared ---- */' },
+  { script: 'desktop', needs: 'home', section: '/* ---- the log: filter by track, stamp what you want to watch ---- */' },
+  { script: 'desktop', needs: 'home', section: '/* ---- tape the slip back on ---- */' },
+  { script: 'desktop', needs: 'home', from: 'var d=deck.getBoundingClientRect();', lines: 4 },
+  { script: 'pocket', needs: 'home', from: 'var cr=cover.getBoundingClientRect();', lines: 1 },
+  { script: 'pocket', needs: 'about', from: 'var stamp=$("stamp");', lines: 3 },
+  { script: 'pocket', needs: 'home', section: '/* Echo */' },
+  { script: 'pocket', needs: 'home', section: '/* pad */' },
+  { script: 'pocket', needs: 'home', section: '/* loose note */' },
+  { script: 'pocket', needs: 'home', from: 'rail.addEventListener("scroll",function(){', lines: 5 },
+  { script: 'pocket', needs: 'home', section: '/* by hand: loss = (weight - 3) squared */' },
+  { script: 'pocket', needs: 'home', section: '/* log */' },
+  { script: 'pocket', needs: 'home', section: '/* the slip: pull down, or press, to tear */' },
+  { script: 'router', needs: 'episode', section: '/* episode chapters */' },
+  { script: 'router', needs: 'writing', section: '/* writing shelves */' },
 ];
 
 const TITLE = /^ {2}\/\*.*\*\/$/;
@@ -115,26 +125,27 @@ export function omit(js: string, omissions: Omission[]): { kept: string; left: s
   for (const o of omissions) {
     const key = 'section' in o ? o.section : o.from;
     const at = lines.flatMap((l, i) => ('section' in o ? l.trim() === key : l.trim().startsWith(key)) ? [i] : []);
-    if (at.length !== 1) throw new Error(`${o.edition}: expected one line for ${JSON.stringify(key)}, found ${at.length}`);
+    if (at.length !== 1) throw new Error(`${o.script}: expected one line for ${JSON.stringify(key)}, found ${at.length}`);
     let end = at[0] + ('section' in o ? 1 : o.lines);
     if ('section' in o) while (end < lines.length && !TITLE.test(lines[end]) && lines[end] !== END) end++;
     for (let i = at[0]; i < end; i++) {
-      if (drop.has(i)) throw new Error(`${o.edition}: omissions overlap at ${JSON.stringify(lines[i])}`);
+      if (drop.has(i)) throw new Error(`${o.script}: omissions overlap at ${JSON.stringify(lines[i])}`);
       drop.add(i);
     }
   }
   return { kept: lines.filter((_, i) => !drop.has(i)).join('\n'), left: lines.filter((_, i) => drop.has(i)) };
 }
 
-// The edition's script as the site carries it, between the edition switch's two lines.
+// A script as the site carries it: each edition's between the edition switch's two lines, so it
+// runs only at its own widths; the router, which both editions share, as it is.
 export const EDITION_OPEN: Record<Edition, string> = {
   desktop: `if(window.matchMedia("${DESKTOP_FROM}").matches){`,
   pocket: `if(!window.matchMedia("${DESKTOP_FROM}").matches){`,
 };
 
-export function portedScript(edition: Edition): string {
-  const { kept } = omit(changedScripts(edition), OMITTED.filter((o) => o.edition === edition));
-  return `${EDITION_OPEN[edition]}${kept}}\n`;
+export function portedScript(script: Script): string {
+  const { kept } = omit(changedScripts(script), OMITTED.filter((o) => o.script === script));
+  return script === 'router' ? kept : `${EDITION_OPEN[script]}${kept}}\n`;
 }
 
 // A file as the site carries it: an opening comment, then the code.

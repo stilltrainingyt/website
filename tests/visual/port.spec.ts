@@ -3,7 +3,7 @@ import path from 'node:path';
 import { test, expect, SITE_DIR } from '../targets';
 import { EDITIONS } from './materials';
 import {
-  DESKTOP_FROM, OMITTED, SCRIPT_CHANGES, changedScripts, omit, portedCss, portedScript, withoutHeader, wrapperCss,
+  DESKTOP_FROM, OMITTED, SCRIPTS, SCRIPT_CHANGES, changedScripts, omit, portedCss, portedScript, withoutHeader, wrapperCss,
 } from './port';
 
 // The design's CSS and scripts as the site carries them, checked against design-reference/:
@@ -21,22 +21,24 @@ test.describe('as written', () => {
     test(`${edition}.css is the design's stylesheet less its token and reduced-motion blocks`, () => {
       expect(withoutHeader(src(`styles/${edition}.css`))).toBe(portedCss(edition));
     });
+  }
 
-    test(`${edition}.js is the design's scripts with only the listed changes and omissions`, () => {
-      expect(withoutHeader(src(`scripts/${edition}.js`))).toBe(portedScript(edition));
-      for (const c of SCRIPT_CHANGES.filter((x) => x.edition === edition && x.to)) {
-        expect(src(`scripts/${edition}.js`), c.why).toContain(c.to);
+  for (const script of SCRIPTS) {
+    test(`${script}.js is the design's ${script === 'router' ? 'page router' : 'scripts'} with only the listed changes and omissions`, () => {
+      expect(withoutHeader(src(`scripts/${script}.js`))).toBe(portedScript(script));
+      for (const c of SCRIPT_CHANGES.filter((x) => x.script === script && x.to)) {
+        expect(src(`scripts/${script}.js`), c.why).toContain(c.to);
       }
-      const { left } = omit(changedScripts(edition), OMITTED.filter((o) => o.edition === edition));
-      for (const needs of new Set(OMITTED.filter((o) => o.edition === edition).map((o) => o.needs))) {
-        const lines = omit(changedScripts(edition), OMITTED.filter((o) => o.edition === edition && o.needs === needs)).left.length;
-        test.info().annotations.push({ type: 'waiting', description: `${lines} of ${edition}'s ${left.length} left-out lines return with the ${needs} page` });
+      const { left } = omit(changedScripts(script), OMITTED.filter((o) => o.script === script));
+      for (const needs of new Set(OMITTED.filter((o) => o.script === script).map((o) => o.needs))) {
+        const lines = omit(changedScripts(script), OMITTED.filter((o) => o.script === script && o.needs === needs)).left.length;
+        test.info().annotations.push({ type: 'waiting', description: `${lines} of ${script}'s ${left.length} left-out lines return with the ${needs} page` });
       }
     });
   }
 
   test('nothing asks whether the visitor prefers reduced motion (allowed change 1)', () => {
-    for (const file of ['styles/wrapper.css', 'styles/tokens.css', 'styles/desktop.css', 'styles/pocket.css', 'styles/edition.css', 'scripts/desktop.js', 'scripts/pocket.js', 'scripts/edition.js']) {
+    for (const file of ['styles/wrapper.css', 'styles/tokens.css', 'styles/desktop.css', 'styles/pocket.css', 'styles/edition.css', 'scripts/desktop.js', 'scripts/pocket.js', 'scripts/router.js', 'scripts/edition.js']) {
       expect(src(file), file).not.toMatch(/prefers-reduced-motion/);
     }
   });
