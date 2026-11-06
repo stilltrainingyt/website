@@ -31,7 +31,7 @@
 
    Used but missing:
    - --ly: the desktop's .leaf reads var(--ly,0deg), but nothing sets it, so it is always 0deg.
-   - The export wrapper (the first <style> of each design file) sets the page's own colours,
+   - The export wrapper (the first style block of each design file) sets the page's own colours,
      #fff and #000, and font, 14px -apple-system,BlinkMacSystemFont,sans-serif: catalogued below.
    - The canvas font falls back to ui-monospace, a family none of the four stacks names. */
 

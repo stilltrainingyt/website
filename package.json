@@ -7,10 +7,14 @@
     "build": "astro build",
     "preview": "astro preview",
     "baselines": "playwright test --project=reference --update-snapshots=all",
+    "baselines:shell": "playwright test --project=reference --update-snapshots=all shell.spec",
     "test:visual": "playwright test --project=reference",
     "test:materials": "playwright test --project=materials",
     "test:selfcheck": "playwright test --project=selfcheck",
-    "test:speed": "playwright test --project=speed --workers=1"
+    "test:speed": "playwright test --project=speed --workers=1",
+    "test:site": "astro build && playwright test --project=site",
+    "test:behaviour": "astro build && playwright test --project=behaviour",
+    "test:site-speed": "astro build && playwright test --project=site-speed --workers=1"
   },
   "dependencies": {
     "astro": "7.4.2"

@@ -1,0 +1,16 @@
+---
+// The desktop's margin tabs, as in design-reference/desktop.html, with the current page's tab
+// lit as the design's router lights it. Its own CSS shows them from 900 px.
+import { currentAttr, type Route } from './nav';
+
+interface Props { current: Route | '' }
+const { current } = Astro.props;
+---
+<nav class="tabs" aria-label="Pages" data-edition="desktop">
+  <button class="tab" type="button" data-route="home" aria-current={currentAttr('home', current)}>Home</button>
+  <button class="tab" type="button" data-route="episodes" aria-current={currentAttr('episodes', current)}>Episodes</button>
+  <button class="tab" type="button" data-route="writing" aria-current={currentAttr('writing', current)}>Writing</button>
+  <button class="tab" type="button" data-route="projects" aria-current={currentAttr('projects', current)}>Projects</button>
+  <button class="tab" type="button" data-route="about" aria-current={currentAttr('about', current)}>About</button>
+  <button class="tab" type="button" data-route="subscribe" aria-current={currentAttr('subscribe', current)}>Subscribe</button>
+</nav>

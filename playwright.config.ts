@@ -24,11 +24,16 @@ export default defineConfig<{ target: Target }>({
     // Making baselines loads each page three times, so long pages need minutes.
     // Up to three retries, each loading the page afresh, in case it drew a rare
     // rendering the baseline loads missed. A changed page fails every load.
-    { name: 'reference', testMatch: 'visual/pages.spec.ts', timeout: 240_000, retries: 3, use: { browserName: 'chromium', target: 'reference' } },
+    { name: 'reference', testMatch: ['visual/pages.spec.ts', 'visual/shell.spec.ts'], timeout: 240_000, retries: 3, use: { browserName: 'chromium', target: 'reference' } },
     // The same screens drawn with the project's own tokens, fonts and images, compared with
     // the same baselines; plus the checks on those materials themselves.
     { name: 'materials', testMatch: ['visual/pages.spec.ts', 'visual/materials.spec.ts'], timeout: 240_000, retries: 3, use: { browserName: 'chromium', target: 'materials' } },
     { name: 'selfcheck', testMatch: 'visual/selfcheck.spec.ts', retries: 3, use: { browserName: 'chromium', target: 'reference' } },
     { name: 'speed', testMatch: 'speed/*.spec.ts', use: { browserName: 'chromium', target: 'reference' } },
+    // The built site (npm run build first): its screens against the design's baselines, with
+    // the same retries for the rare second rendering; what it does; and its speed budgets.
+    { name: 'site', testMatch: 'visual/shell.spec.ts', retries: 3, use: { browserName: 'chromium', target: 'site' } },
+    { name: 'behaviour', testMatch: ['behaviour/*.spec.ts', 'visual/port.spec.ts'], use: { browserName: 'chromium', target: 'site' } },
+    { name: 'site-speed', testMatch: 'speed/*.spec.ts', use: { browserName: 'chromium', target: 'site' } },
   ],
 });

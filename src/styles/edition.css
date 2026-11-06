@@ -1,0 +1,5 @@
+/* The edition switch: the desktop edition from 900 px wide, the pocket edition below, as
+   src/layouts/Journal.astro links desktop.css and pocket.css. The shell parts only one edition
+   has carry data-edition and are hidden at the other edition's widths. Nothing else. */
+@media (min-width:900px){[data-edition="pocket"]{display:none}}
+@media not all and (min-width:900px){[data-edition="desktop"]{display:none}}
