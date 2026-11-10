@@ -3,7 +3,8 @@ import path from 'node:path';
 import { test, expect, SITE_DIR } from '../targets';
 import { EDITIONS } from './materials';
 import {
-  DESKTOP_FROM, OMITTED, SCRIPTS, SCRIPT_CHANGES, changedScripts, omit, portedCss, portedScript, withoutHeader, wrapperCss,
+  C_READERS, DESKTOP_FROM, OMITTED, SCRIPTS, SCRIPT_CHANGES, SPEED_PROPERTIES, changedScripts, omit, portedCss, portedScript,
+  withoutHeader, wrapperCss,
 } from './port';
 
 // The design's CSS and scripts as the site carries them, checked against design-reference/:
@@ -18,10 +19,33 @@ test.describe('as written', () => {
   });
 
   for (const edition of EDITIONS) {
-    test(`${edition}.css is the design's stylesheet less its token and reduced-motion blocks`, () => {
+    test(`${edition}.css is the design's stylesheet less its token and reduced-motion blocks, with the speed declarations`, () => {
       expect(withoutHeader(src(`styles/${edition}.css`))).toBe(portedCss(edition));
     });
   }
+
+  // Allowed change 4 must leave every pixel as it was: a registered property starts from the
+  // fallback every var() gives it and is set by no rule, and --c reaches every part that reads it.
+  test('the speed changes leave every value as it was (allowed change 4)', () => {
+    for (const edition of EDITIONS) {
+      const css = portedCss(edition).replace(/\/\*[\s\S]*?\*\//g, '').replace(/@property[^{]*\{[^}]*\}/g, '');
+      for (const p of SPEED_PROPERTIES[edition]) {
+        const fallbacks = [...css.matchAll(new RegExp(`var\\(${p.name}\\s*,\\s*([^)]*)\\)`, 'g'))].map((m) => m[1].trim());
+        expect(fallbacks.length, `${edition}: ${p.name} is read`).toBeGreaterThan(0);
+        expect(new Set(fallbacks), `${edition}: every fallback of ${p.name}`).toEqual(new Set([p.initial]));
+        expect(css, `${edition}: no var() reads ${p.name} without a fallback`).not.toMatch(new RegExp(`var\\(${p.name}\\s*\\)`));
+        expect(css, `${edition}: no rule sets ${p.name}`).not.toMatch(new RegExp(`[{;\\s]${p.name}\\s*:`));
+      }
+      const readers = [...css.matchAll(/([^{}]+)\{([^{}]*)\}/g)]
+        .filter((m) => /var\(--c\b/.test(m[2]))
+        .flatMap((m) => m[1].split(','))
+        .map((selector) => `.${/\.([\w-]+)[^\s.]*(?:\.[\w-]+)*\s*$/.exec(selector.trim())![1]}`);
+      expect(new Set(readers), `${edition}: the parts --c is written onto`).toEqual(new Set(C_READERS[edition].split(',')));
+      const js = src(`scripts/${edition}.js`);
+      expect(js.match(/setProperty\("--c"/g), `${edition}: --c is written only by putC`).toHaveLength(1);
+      expect(js).toContain('parts[k].style.setProperty("--c",v);');
+    }
+  });
 
   for (const script of SCRIPTS) {
     test(`${script}.js is the design's ${script === 'router' ? 'page router' : 'scripts'} with only the listed changes and omissions`, () => {

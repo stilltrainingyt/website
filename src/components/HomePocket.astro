@@ -1,0 +1,124 @@
+---
+// The home page's pocket edition: design-reference/pocket.html's home page as written, with its
+// words from src/data/home.yaml and its lists from the content files (home.ts). Each of its
+// pages is marked data-edition="pocket", so from 900 px edition.js removes them. Published
+// titles on the track cards link to their pages, drawn as the design draws the episode log's
+// linked titles (.ttl a); planned ones are plain text.
+import { chipClass, counting, type HomeContent } from './home';
+
+interface Props { home: HomeContent }
+const { copy, cards, articles, projects, projectCount } = Astro.props.home;
+const { cover, premise, tracks, byHand, cabinet } = copy;
+---
+  <section class="leaf gridded" id="cover" data-leaf data-edition="pocket">
+    <span class="washi l" aria-hidden="true"></span>
+    <div class="stack">
+      <div class="row between">
+        <p class="eyebrow">{cover.eyebrow.pocket}</p>
+        <button class="mini" id="themeBtn" type="button" data-theme-toggle aria-pressed="false">Dark paper</button>
+      </div>
+      <h1>{cover.title.map((line, i) => (i === 0 ? line : <Fragment><br>{line}</Fragment>))}</h1>
+      <hr class="hr">
+      <p class="lede">{cover.lede.pocket}</p>
+      <div class="echowrap" id="echoWrap">
+        <button class="echobtn" id="echoBtn" type="button" aria-label="Send Echo round for one more episode">
+          <img class="echo lt" alt="" src="/images/echo-light.png" width="460" height="325">
+          <img class="echo dk" alt="" src="/images/echo-dark.png" width="460" height="325">
+        </button>
+        <div class="row" style="justify-content:center"><span class="chip" id="epCount" role="status">Episode 001</span><span class="hand">{cover.echo}</span></div>
+      </div>
+      <a class="btn" href="#tracks" data-go="tracks"><span>{cover.syllabus}</span><span class="arrow">&#8594;</span></a>
+      <a class="btn ghost" href="#byhand" data-go="byhand"><span>{cover.byHand}</span><span class="arrow">&#8595;</span></a>
+    </div>
+  </section>
+  <section class="leaf" id="why" data-leaf data-edition="pocket">
+    <div class="stack">
+      <p class="eyebrow">{premise.eyebrow.pocket}</p>
+      <h2>{premise.title}</h2>
+      <p>{premise.intro.pocket}</p>
+      <p>{premise.pad.intro}</p>
+      <div>
+        <div class="padtop" aria-hidden="true"></div>
+        <div class="pad" id="pad">
+          {premise.pad.pages.map((page) => <div class="pg"><span class="k">{page.title}</span><p>{page.text.pocket}</p></div>)}
+        </div>
+      </div>
+      <div class="row">
+        <button class="mini" id="pgBack" type="button" disabled>Back</button>
+        <button class="btn" id="pgNext" type="button" style="flex:1 1 180px; width:auto"><span>Turn the page</span><span class="arrow">&#8593;</span></button>
+      </div>
+      <p class="small" id="pgNum" role="status">{`Page 1 of ${premise.pad.pages.length}`}</p>
+      <div class="note" id="note" tabindex="0" role="group" aria-label="Loose sticky note. Move it with the arrow keys.">
+        <p class="hand">{premise.note.map((line, i) => (i === 0 ? line : <Fragment><br>{line}</Fragment>))}</p>
+      </div>
+      <p class="small">{premise.noteHint}</p>
+    </div>
+  </section>
+  <section class="leaf" id="tracks" data-leaf data-edition="pocket">
+    <span class="washi r" aria-hidden="true"></span>
+    <div class="stack">
+      <p class="eyebrow">{tracks.eyebrow.pocket}</p>
+      <h2>{tracks.title}</h2>
+      <p class="lede">{tracks.lede.pocket}</p>
+      <div class="rail" id="rail">
+        {cards.map((card) => (
+        <article class="flipcard"><div class="flipin">
+          <div class="card front"><p class="small">{card.number}</p><h3>{card.title}</h3><p style="color:var(--ink-2)">{card.about}</p>
+            <ul>{card.items.map((item) => (item.href ? <li class="ttl"><a href={item.href}>{item.title}</a></li> : <li>{item.title}</li>))}</ul>
+            <div class="row between foot"><span class={chipClass(card.look)}>{card.chip}</span><button class="mini" type="button" data-flip>Turn over</button></div></div>
+          <div class="card back"><p class="small">{card.backNumber.pocket}</p><h3>{tracks.back}</h3>
+            <ul>{card.outcomes.map((outcome) => <li>{outcome}</li>)}</ul>
+            <div class="row between foot"><span class="hand">{card.needs}</span><button class="mini" type="button" data-flip>Turn back</button></div></div>
+        </div></article>
+        ))}
+      </div>
+      <div class="dots" id="dots" aria-hidden="true">{cards.map((_, i) => <i class={i === 0 ? 'on' : undefined}></i>)}</div>
+    </div>
+  </section>
+  <section class="leaf gridded" id="byhand" data-leaf data-edition="pocket">
+    <div class="stack">
+      <p class="eyebrow">{byHand.eyebrow.pocket}</p>
+      <h2>{byHand.title}</h2>
+      <p class="lede">{byHand.lede.pocket}</p>
+      <div class="plot"><canvas id="gd" role="img" aria-label="A bowl-shaped loss curve with a dot marking the current weight. The lowest point is at weight 3."></canvas></div>
+      <label class="lrbox" for="lr"><span>Step size &nbsp;<output id="lrOut" for="lr">0.30</output></span>
+        <input type="range" id="lr" min="0.05" max="1.1" step="0.05" value="0.3"></label>
+      <button class="btn" id="stepBtn" type="button"><span>Take one step</span><span class="arrow">&#8600;</span></button>
+      <p class="gdsay" id="gdSay" role="status">The dot starts at weight 7.50. Each step moves it against the slope.</p>
+      <div class="work">
+        <div class="wh" id="workHead">The last step, worked out</div>
+        <dl id="workBody">
+          <div class="wr"><dt>No steps yet. Press &ldquo;Take one step&rdquo;.</dt><dd></dd></div>
+        </dl>
+      </div>
+      <div class="row between"><p class="small" style="flex:1 1 180px; min-width:0">{byHand.hint.pocket}</p><button class="mini" id="resetBtn" type="button">Start over</button></div>
+    </div>
+  </section>
+  <section class="leaf" id="files" data-leaf data-edition="pocket">
+    <span class="washi l" aria-hidden="true"></span>
+    <div class="stack">
+      <p class="eyebrow">{cabinet.eyebrow.pocket}</p>
+      <h2>{cabinet.title}</h2>
+      <p class="lede">{cabinet.lede.pocket}</p>
+      <div class="cabinet">
+        <button class="folder a" type="button" aria-expanded="false" aria-controls="drawer-articles">
+          <span class="f-back"><span class="f-tab">{cabinet.articles.tab}</span></span>
+          <span class="f-paper p1" aria-hidden="true"></span><span class="f-paper p2" aria-hidden="true"></span><span class="f-paper p3" aria-hidden="true"></span>
+          <span class="f-front"><span class="f-meta">{counting(cabinet.inside, articles.length)}</span><span class="f-label">{cabinet.articles.label}</span><span class="f-hint">Open</span></span>
+        </button>
+        <div class="drawer" id="drawer-articles" hidden>
+          <div class="row between"><h3>{cabinet.articles.label}</h3><a class="mini" href="/writing/" data-route="writing">{cabinet.articles.all}</a></div>
+          {articles.map((sheet) => <article class="sheet"><h3>{sheet.title}</h3><p>{sheet.summary}</p><div class="row">{sheet.tags.map((tag) => <span class={chipClass(tag.look)}>{tag.text}</span>)}</div></article>)}
+        </div>
+        <button class="folder b" type="button" aria-expanded="false" aria-controls="drawer-projects" style="margin-top:14px">
+          <span class="f-back"><span class="f-tab">{cabinet.projects.tab}</span></span>
+          <span class="f-paper p1" aria-hidden="true"></span><span class="f-paper p2" aria-hidden="true"></span><span class="f-paper p3" aria-hidden="true"></span>
+          <span class="f-front"><span class="f-meta">{counting(cabinet.inside, projects.length)}</span><span class="f-label">{cabinet.projects.label}</span><span class="f-hint">Open</span></span>
+        </button>
+        <div class="drawer" id="drawer-projects" hidden>
+          <div class="row between"><h3>{cabinet.projects.label}</h3><a class="mini" href="/projects/" data-route="projects">{counting(cabinet.projects.all.pocket, projectCount)}</a></div>
+          {projects.map((sheet) => <article class="sheet"><h3>{sheet.title}</h3><p>{sheet.summary}</p><div class="row">{sheet.tags.map((tag) => <span class={chipClass(tag.look)}>{tag.text}</span>)}</div></article>)}
+        </div>
+      </div>
+    </div>
+  </section>

@@ -1,7 +1,8 @@
 /* The pocket edition's stylesheet from design-reference/pocket.html, as written, applied
-   below 900 px wide (src/layouts/Journal.astro). Its token blocks live in tokens.css and its
-   reduced-motion block is removed (CLAUDE.md, allowed change 1). tests/visual/port.spec.ts
-   checks it against the design. */
+   below 900 px wide (src/layouts/Journal.astro). Its token blocks live in tokens.css, its
+   reduced-motion block is removed (CLAUDE.md, allowed change 1), and the values its scroll
+   effects set on every frame and read only where set are declared non-inherited at the end
+   (allowed change 4). tests/visual/port.spec.ts checks it against the design. */
 
 /* Layout: a top-bound pocket notebook held in one hand. Wire across the top, a single
    column of graph-paper pages, every control at least 48px tall, and the index moved
@@ -331,3 +332,7 @@ a.mini{text-decoration:none}
 .flipin > .card.back{visibility:hidden}
 .flipcard.flipped .flipin > .card.front{visibility:hidden}
 .flipcard.flipped .flipin > .card.back{visibility:visible}
+
+/* speed (allowed change 4): set on every frame of a scroll and read only where set */
+@property --wire{syntax:"<number>"; inherits:false; initial-value:0}
+@property --s{syntax:"<number>"; inherits:false; initial-value:0}
