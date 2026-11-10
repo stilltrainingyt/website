@@ -1,0 +1,68 @@
+{
+  "tracks": [
+    {
+      "id": "foundations",
+      "label": "Foundations"
+    },
+    {
+      "id": "course",
+      "label": "Course"
+    },
+    {
+      "id": "e3",
+      "label": "E³ research",
+      "modes": [
+        {
+          "id": "exploration",
+          "label": "Exploration"
+        },
+        {
+          "id": "expedition",
+          "label": "Expedition"
+        },
+        {
+          "id": "experiment",
+          "label": "Experiment"
+        }
+      ]
+    }
+  ],
+  "topics": [
+    {
+      "id": "career-and-skills",
+      "label": "Career and skills"
+    },
+    {
+      "id": "ai",
+      "label": "AI"
+    },
+    {
+      "id": "research",
+      "label": "Research"
+    },
+    {
+      "id": "projects",
+      "label": "Projects"
+    },
+    {
+      "id": "open-source",
+      "label": "Open source"
+    },
+    {
+      "id": "tech",
+      "label": "Tech"
+    },
+    {
+      "id": "history",
+      "label": "History"
+    },
+    {
+      "id": "world",
+      "label": "World"
+    },
+    {
+      "id": "thoughts",
+      "label": "Thoughts"
+    }
+  ]
+}

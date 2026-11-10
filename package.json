@@ -12,7 +12,7 @@
     "test:materials": "playwright test --project=materials",
     "test:selfcheck": "playwright test --project=selfcheck",
     "test:speed": "playwright test --project=speed --workers=1",
-    "test:site": "astro build && playwright test --project=site",
+    "test:site": "astro build && playwright test --project=site --project=fixtures",
     "test:behaviour": "astro build && playwright test --project=behaviour",
     "test:site-speed": "astro build && playwright test --project=site-speed --workers=1"
   },

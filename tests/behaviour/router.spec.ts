@@ -2,6 +2,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import type { BrowserContext, Page } from '@playwright/test';
 import { test, expect, VIEWS, SHELL_PAGES, ADDRESSES, SITE_ORIGIN, SITE_DIR, urlFor, designPage, standIn, type View, type PageName } from '../targets';
+import { C_READERS } from '../visual/port';
 
 // The page router (step 4), driven by automated clicks. Every page has its own address: a
 // click on an entry fetches the next page's file, places its page next to the current one,
@@ -354,13 +355,18 @@ for (const view of VIEWS) {
       const placed = page.locator('[data-page="writing"]');
 
       // The scroll effects found the leaves: every leaf has its lift, those near the screen their tilt.
-      const leaves = await placed.locator('[data-leaf]').evaluateAll((ls) => ls.map((l) => {
+      // A leaf's --c is written onto the parts that read it (allowed change 4), never the leaf.
+      const leaves = await placed.locator('[data-leaf]').evaluateAll((ls, readers) => ls.map((l) => {
         const s = (l as HTMLElement).style;
-        return { p: s.getPropertyValue('--p'), c: s.getPropertyValue('--c'), lx: s.getPropertyValue('--lx') };
-      }));
+        const parts = [...l.querySelectorAll<HTMLElement>(readers)].map((r) => r.style.getPropertyValue('--c'));
+        return { p: s.getPropertyValue('--p'), c: s.getPropertyValue('--c'), partsC: parts, lx: s.getPropertyValue('--lx') };
+      }), C_READERS[edition]);
       expect(leaves.length).toBe(8);
       for (const l of leaves) expect(l.p).not.toBe('');
-      expect(leaves.filter((l) => l.c !== '').length).toBeGreaterThan(0);
+      for (const l of leaves) expect(l.c).toBe('');
+      const tilted = leaves.filter((l) => l.partsC.length > 0 && l.partsC.every((c) => c !== ''));
+      expect(tilted.length).toBeGreaterThan(0);
+      for (const l of leaves) expect(new Set(l.partsC).size, 'every part of a leaf has the same --c').toBeLessThanOrEqual(1);
       if (edition === 'desktop') for (const l of leaves) expect(l.lx).not.toBe('');
       // And they follow the scroll: the last leaf, far below, lifts as it comes up the screen.
       const last = placed.locator('[data-leaf]').last();
@@ -386,10 +392,11 @@ for (const view of VIEWS) {
 
       if (edition === 'desktop') {
         // Cards tilt under the pointer.
+        // Hovered once the card has stopped moving: the scroll effects lift its leaf a frame after
+        // it scrolls into view, so a pointer sent to where it was measured can miss it.
         const tilt = placed.locator('[data-tilt]').first();
-        await tilt.scrollIntoViewIfNeeded();
         const box = (await tilt.boundingBox())!;
-        await page.mouse.move(box.x + box.width * 0.8, box.y + box.height * 0.3);
+        await tilt.hover({ position: { x: box.width * 0.8, y: box.height * 0.3 } });
         await expect.poll(() => tilt.evaluate((t) => (t as HTMLElement).style.transform)).toContain('rotateY(');
         // Loose things move with the arrow keys, 16 px a press.
         const loose = placed.locator('[data-drag]').first();

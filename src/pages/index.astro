@@ -1,5 +1,11 @@
 ---
-// The home page's address. Its page is empty until step 5 brings its content.
+// The home page's address: both editions of the design's home page, its words and lists from
+// the content and data files (src/components/home.ts). edition.js keeps the one the width shows.
 import Journal from '../layouts/Journal.astro';
+import HomeDesktop from '../components/HomeDesktop.astro';
+import HomePocket from '../components/HomePocket.astro';
+import { homeContent } from '../components/home';
+
+const home = await homeContent();
 ---
-<Journal page="home" />
+<Journal page="home"><HomeDesktop home={home} /><HomePocket home={home} /></Journal>

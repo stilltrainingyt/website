@@ -1,12 +1,14 @@
 import type { Page } from '@playwright/test';
-import { test, expect, VIEWS, SHELL_PAGES, urlFor, type View, type PageName } from '../targets';
+import { test, expect, VIEWS, SHELL_PAGES, EMPTY_PAGES, urlFor, type View, type PageName } from '../targets';
 
-// What the journal does around its empty pages (step 3): each address shows its own page with
-// its entry lit, each edition shows only its own parts and runs only its own script, the paper
-// switch, the wire binding, the scroll progress, and full motion for every visitor.
+// What the journal does around its pages (step 3): each address shows its own page with its
+// entry lit, each edition keeps only its own parts (the other's are removed at load, step 5) and
+// runs only its own script, the paper switch, the wire binding, the scroll progress, and full
+// motion for every visitor.
 
+// The desktop's paper switch is the frame's .toggle; the pocket home has its own #themeBtn.
 const PARTS = {
-  desktop: ['a.skip[href="#premise"]', '.bind', '.tabs', '#themeBtn', '.pnav'],
+  desktop: ['a.skip[href="#premise"]', '.bind', '.tabs', '#themeBtn.toggle', '.pnav'],
   pocket: ['a.skip[href="#why"]', '.wire', '.dock'],
 };
 const editionOf = (view: View) => (view.width >= 900 ? 'desktop' : 'pocket');
@@ -30,20 +32,21 @@ for (const view of VIEWS) {
     const edition = editionOf(view);
     const other = edition === 'desktop' ? 'pocket' : 'desktop';
 
-    test('each address shows its own empty page, its entry lit, and only its edition\'s parts', async ({ page, target }) => {
+    test('each address shows its own page, its entry lit, and only its edition\'s parts', async ({ page, target }) => {
       const errors = watchErrors(page);
       for (const name of SHELL_PAGES) {
         const response = await page.goto(urlFor(target, view, name));
         expect(response?.status(), name).toBe(name === 'missing' ? 404 : 200);
         expect(await page.locator('[data-page]').evaluateAll((ps) => ps.map((p) => p.getAttribute('data-page')))).toEqual([name]);
-        expect(await page.locator('[data-page]').evaluate((p) => p.childElementCount)).toBe(0);
+        // The home page has its contents (step 5); the others are empty until theirs arrive.
+        if (EMPTY_PAGES.includes(name)) expect(await page.locator('[data-page]').evaluate((p) => p.childElementCount), name).toBe(0);
         const navs = edition === 'desktop' ? ['.tabs', '.pnav'] : ['.dock'];
         for (const nav of navs) {
           expect(await page.locator(`${nav} [aria-current="true"]`).evaluateAll((els) => els.map((e) => e.getAttribute('data-route'))), `${name}: ${nav}`)
             .toEqual(entryOf(name) ? [entryOf(name)] : []);
           expect(await page.locator(`${nav} [data-route]`).count()).toBe(6);
         }
-        for (const part of PARTS[other]) expect(await display(page, part), `${name}: ${other}'s ${part}`).toBe('none');
+        for (const part of PARTS[other]) expect(await page.locator(part).count(), `${name}: ${other}'s ${part}`).toBe(0);
         for (const part of PARTS[edition]) {
           // The desktop's own CSS shows the binding only from 1080 px.
           const hidden = part === '.bind' && view.width < 1080;
@@ -62,7 +65,7 @@ for (const view of VIEWS) {
     });
 
     test('scrolling moves the progress bar, written on the frame, and the wire', async ({ page, target }) => {
-      await page.goto(urlFor(target, view, 'home'));
+      await page.goto(urlFor(target, view, 'about'));
       // An empty page cannot scroll; give it height for this test only.
       await page.evaluate(() => { (document.querySelector('.page') as HTMLElement).style.height = '5000px'; });
       const y = await page.evaluate(() => {
@@ -96,7 +99,7 @@ for (const view of VIEWS) {
 
     test('motion stays on for visitors who ask for less (allowed change 1)', async ({ page, target }) => {
       await page.emulateMedia({ reducedMotion: 'reduce' });
-      await page.goto(urlFor(target, view, 'home'));
+      await page.goto(urlFor(target, view, 'about'));
       expect(await page.evaluate(() => matchMedia('(prefers-reduced-motion: reduce)').matches)).toBe(true);
       // The page turn's arriving animation keeps its full length.
       expect(await page.locator('.page').evaluate((p) => { p.classList.add('arriving'); return getComputedStyle(p).animationDuration; })).toBe('0.75s');
@@ -181,7 +184,7 @@ test.describe('the 900 px edition switch', () => {
     await resize(899, true);
     expect(await marked(), 'loaded again').toBe(false);
     expect(await display(page, '.dock')).toBe('flex');
-    expect(await display(page, '.tabs')).toBe('none');
+    expect(await page.locator('.tabs').count(), 'the desktop\'s parts were removed').toBe(0);
     expect(await page.locator('#bind span').count(), 'the desktop script did not run').toBe(0);
     expect(await page.evaluate(() => document.documentElement.getAttribute('data-theme')), 'pocket read the choice').toBe('dark');
 

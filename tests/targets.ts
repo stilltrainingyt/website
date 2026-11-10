@@ -3,6 +3,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { pathToFileURL } from 'node:url';
 import { designHtml, materialPage, PUBLIC_DIR, TOKENS_CSS, type Edition } from './visual/materials';
+import { FIXTURE_PAGES, FIXTURE_SITES, fixtureDist, type FixtureSite } from './fixtures/sites';
 
 // The nine pages of the design files, by their data-page names.
 export const PAGES = [
@@ -24,12 +25,15 @@ export type Paper = (typeof PAPERS)[number];
 
 // What is under test: the design files themselves; the design files drawn with the
 // project's own materials (tokens.css, public/fonts, public/images) in place of their own;
-// or the built site.
-export type Target = 'reference' | 'materials' | 'site';
+// the built site; or the site built from the design's own samples (tests/fixtures).
+export type Target = 'reference' | 'materials' | 'site' | 'fixture';
 
 export const MATERIALS_ORIGIN = 'http://materials.test';
 export const SITE_ORIGIN = 'http://site.test';
 export const SITE_DIR = path.resolve('dist');
+// Each design-sample site at an address of its own.
+export const fixtureOrigin = (site: FixtureSite): string => `http://${site}.fixture.test`;
+export const editionOf = (view: View): Edition => (view.file === 'pocket.html' ? 'pocket' : 'desktop');
 
 // The site's address for each design page. Episode and article pages get theirs from the
 // content files; any address the site does not have shows the missing page.
@@ -38,8 +42,10 @@ export const ADDRESSES: Partial<Record<PageName, string>> = {
   about: '/about/', subscribe: '/subscribe/', missing: '/torn-out/',
 };
 
-// The pages with an address of their own while they are empty (step 3).
+// The pages with an address of their own (step 3), and those still empty until their own step
+// brings their content.
 export const SHELL_PAGES: PageName[] = ['home', 'episodes', 'writing', 'projects', 'about', 'subscribe', 'missing'];
+export const EMPTY_PAGES: PageName[] = SHELL_PAGES.filter((name) => name !== 'home');
 
 export function urlFor(target: Target, view: View, pageName: PageName): string {
   if (target === 'reference') {
@@ -49,6 +55,11 @@ export function urlFor(target: Target, view: View, pageName: PageName): string {
   if (target === 'materials') return `${MATERIALS_ORIGIN}/${view.file}#${pageName}`;
   const address = ADDRESSES[pageName];
   if (!address) throw new Error(`The site has no ${pageName} page until its content arrives.`);
+  if (target === 'fixture') {
+    const sites = FIXTURE_PAGES[pageName];
+    if (!sites) throw new Error(`No design sample draws the ${pageName} page yet.`);
+    return `${fixtureOrigin(sites[editionOf(view)])}${address}`;
+  }
   return `${SITE_ORIGIN}${address}`;
 }
 
@@ -68,16 +79,28 @@ export async function serveMaterials(context: BrowserContext): Promise<void> {
   });
 }
 
-// Serves the built site (dist/, from `astro build`) the way Cloudflare does: an address ending
-// in / is its folder's index.html, and an address with no file gets 404.html with a 404 status.
-export async function serveSite(context: BrowserContext): Promise<void> {
-  if (!fs.existsSync(path.join(SITE_DIR, 'index.html'))) throw new Error('No built site in dist/: run `npm run build` first.');
-  await context.route(`${SITE_ORIGIN}/**`, (route) => {
+// Serves a built site the way Cloudflare does: an address ending in / is its folder's
+// index.html, and an address with no file gets 404.html with a 404 status.
+async function serveBuilt(context: BrowserContext, origin: string, dir: string, missing: string): Promise<void> {
+  if (!fs.existsSync(path.join(dir, 'index.html'))) throw new Error(missing);
+  await context.route(`${origin}/**`, (route) => {
     const { pathname } = new URL(route.request().url());
-    const file = path.join(SITE_DIR, decodeURIComponent(pathname), pathname.endsWith('/') ? 'index.html' : '');
-    if (file.startsWith(SITE_DIR + path.sep) && fs.existsSync(file) && fs.statSync(file).isFile()) return route.fulfill({ path: file });
-    return route.fulfill({ status: 404, path: path.join(SITE_DIR, '404.html') });
+    const file = path.join(dir, decodeURIComponent(pathname), pathname.endsWith('/') ? 'index.html' : '');
+    if (file.startsWith(dir + path.sep) && fs.existsSync(file) && fs.statSync(file).isFile()) return route.fulfill({ path: file });
+    return route.fulfill({ status: 404, path: path.join(dir, '404.html') });
   });
+}
+
+// The built site, dist/ (from `astro build`).
+export async function serveSite(context: BrowserContext): Promise<void> {
+  await serveBuilt(context, SITE_ORIGIN, SITE_DIR, 'No built site in dist/: run `npm run build` first.');
+}
+
+// The design-sample sites, built by the fixture-sites project (tests/fixtures/build.setup.ts).
+export async function serveFixtures(context: BrowserContext): Promise<void> {
+  for (const site of Object.keys(FIXTURE_SITES) as FixtureSite[]) {
+    await serveBuilt(context, fixtureOrigin(site), fixtureDist(site), `The ${site} design sample is not built: run the fixture-sites project first.`);
+  }
 }
 
 // A design page's contents as written: the inside of its <div class="page" data-page="…">.
@@ -128,6 +151,7 @@ export const test = base.extend<{ target: Target }>({
     const context = await browser.newContext({ viewport, isMobile, hasTouch, colorScheme });
     if (target === 'materials') await serveMaterials(context);
     if (target === 'site') await serveSite(context);
+    if (target === 'fixture') await serveFixtures(context);
     await use(context);
     await browser.close();
   },

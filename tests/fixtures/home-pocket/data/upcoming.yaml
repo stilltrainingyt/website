@@ -1,0 +1,50 @@
+# The titles the design's pocket home page lists on its track cards, as planned episodes in
+# slate order. Its second title is shorter than the desktop's.
+ST-001:
+  title: "What a weight is, physically"
+  track: foundations
+  stage: planned
+ST-002:
+  title: "Gradient descent by hand"
+  track: foundations
+  stage: planned
+ST-003:
+  title: "Why a tokenizer breaks arithmetic"
+  track: foundations
+  stage: planned
+ST-004:
+  title: "Attention as a lookup table"
+  track: foundations
+  stage: planned
+ST-005:
+  title: "Linear algebra you actually use"
+  track: course
+  stage: planned
+ST-006:
+  title: "Training loops end to end"
+  track: course
+  stage: planned
+ST-007:
+  title: "Quantization: what you lose"
+  track: course
+  stage: planned
+ST-008:
+  title: "Running a 7B on 8 GB"
+  track: course
+  stage: planned
+ST-009:
+  title: "SliceGPT, on one laptop"
+  track: e3
+  stage: planned
+ST-010:
+  title: "Layer streaming for small GPUs"
+  track: e3
+  stage: planned
+ST-011:
+  title: "Graph tokenization for numbers"
+  track: e3
+  stage: planned
+ST-012:
+  title: "Small models, honest benchmarks"
+  track: e3
+  stage: planned

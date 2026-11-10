@@ -13,5 +13,7 @@ summary:
 pinned: false
 hot: false
 video:         # optional: episodes/<address> of its video, which links this article back
+cabinet:       # optional: what the home page's cabinet shows in place of the summary and the
+               # topic, e.g. { summary: A shorter line, tags: [{ text: Draft, look: open }, Local AI] }
 ---
 The article, in Markdown.

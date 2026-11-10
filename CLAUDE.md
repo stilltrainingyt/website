@@ -14,12 +14,14 @@
   1. Remove the prefers-reduced-motion CSS blocks and treat the scripts' `reduce` as false.
   2. Write the --sp scroll value on .frame instead of the document root.
   3. Relabel filters and track cards from src/data/taxonomy.json.
+  4. Speed changes that leave every screenshot identical, each listed in tests/visual/port.ts
+     with what it saves at 4x CPU slowdown.
   Anything else that would change the reference code: stop and ask.
 - New pieces are composed only from existing components, and wait for my approval.
 
 ## Content
 - Content lives only in src/content/ and src/data/. Pages never hard-code content.
-- Archives list only published items. Upcoming items appear only on the production board.
+- Archives list only published items. Upcoming items appear only on the production board and, as plain text, on the home track cards.
 - No YouTube Shorts anywhere on the site.
 
 ## Working
