@@ -19,17 +19,22 @@ import Tabs from '../components/Tabs.astro';
 import Dock from '../components/Dock.astro';
 import PageStrip from '../components/PageStrip.astro';
 import { DESKTOP_FROM, routeOf, type PageName } from '../components/nav';
+import { site } from '../components/content';
+import { checkContent } from '../components/checks';
 
 interface Props { page: PageName }
 const { page } = Astro.props;
 const current = routeOf(page);
 
+// No page is built until the content files agree with one another.
+await checkContent();
+
 // Until each page's own step names it for search (ASSUMPTIONS.md, step 3).
 const TITLES: Record<PageName, string> = {
-  home: 'StillTraining', episodes: 'Episodes · StillTraining', episode: 'Episode · StillTraining',
-  writing: 'Writing · StillTraining', article: 'Writing · StillTraining', projects: 'Projects · StillTraining',
-  about: 'About · StillTraining', subscribe: 'Subscribe · StillTraining', missing: 'Page not found · StillTraining',
+  home: '', episodes: 'Episodes', episode: 'Episode', writing: 'Writing', article: 'Writing',
+  projects: 'Projects', about: 'About', subscribe: 'Subscribe', missing: 'Page not found',
 };
+const title = TITLES[page] ? `${TITLES[page]} · ${site.name}` : site.name;
 ---
 <!doctype html>
 <html lang="en">
@@ -37,7 +42,7 @@ const TITLES: Record<PageName, string> = {
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="robots" content="noindex">
-<title>{TITLES[page]}</title>
+<title>{title}</title>
 <style is:inline set:html={wrapperCss}></style>
 <link rel="stylesheet" href={tokensCss}>
 <link rel="stylesheet" href={desktopCss} media={DESKTOP_FROM}>
