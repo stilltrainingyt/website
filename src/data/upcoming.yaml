@@ -1,0 +1,3 @@
+# The production board: one entry per planned episode, under its slate number.
+# Copy templates/upcoming.yaml for a new entry. When the video goes up, its entry
+# leaves this file in the same pull request that adds its video file.
