@@ -19,6 +19,10 @@ Ideas outside the agreed scope. Nothing here is built unless you pick it.
 - Skip links that skip to each page's own first entry. The design's two skip links point at home-page entries (`#premise`, `#why`) on every page, so on other pages they lead nowhere.
 - A long cache lifetime for the hashed files under `/_astro/` in `public/_headers`. Their names change whenever their contents do, so browsers could keep them for a year.
 - Each edition's script and CSS downloaded only at its own widths (the other edition's 4 to 9 KB of script and 30 to 40 KB of CSS, before compression), if the speed tests ever ask for it.
+- Fetching the next page's file when the pointer rests on an entry or a key focuses it, so the turn starts sooner.
+- Back and Forward returning to where the visitor was on each page, instead of its top.
+- Ctrl-click, ⌘-click and Shift-click on page-strip links opening a new tab or window, as plain links do.
+- Turning in place between two episodes or two articles, instead of loading the page (the design's `show()` treats the same page name as already shown).
 
 ## Found in the design files
 
@@ -27,3 +31,4 @@ Ideas outside the agreed scope. Nothing here is built unless you pick it.
 - The font link asks for Fraunces at 500 and 700, but every rule that uses the display font sets 700, so 500 is never drawn. Its rules stay as in the design; they share their files with 700, so they cost nothing.
 - On Windows, Chrome draws the edges of some letters slightly differently from one load to the next (the desktop deck at 1440 px on nearly every load, a few other screens rarely), although the page is identical. The screenshot test accepts every rendering the design file itself produced; running it in WSL2 may make it exact. Step 13's runs in Firefox and WebKit will show whether it is Chrome only.
 - Pocket's scroll handler works out which dock entry is current from `data-go` attributes the dock's buttons do not have, and never uses the result. The desktop's leaf handler likewise works out the nearest leaf and never uses it. Both are kept as written.
+- The scroll effects lift the document's first leaf fully on arrival (`i===0 ? 1 : …`, "the first leaf is already on the desk"). In the design file that is always the home page's first leaf. On the site it is the first leaf of whichever page loaded first: a page opened at its own address lifts its first leaf fully, and after turning back home, home's first leaf is no longer first. It draws the same while that leaf starts within the top 38% of the screen (desktop) or 50% (pocket). Changing it changes the reference code, so it waits for your decision, at the latest when the home page arrives in step 5.

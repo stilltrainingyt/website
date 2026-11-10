@@ -22,7 +22,7 @@ npm run test:visual               # compare the design files against them
 npm run test:materials            # the design drawn with the project's tokens, fonts and images
 npm run test:selfcheck            # prove small changes are caught
 npm run test:speed                # the design files' timing at 1×, 4× and 6× CPU slowdown
-npm run test:site                 # build the site and compare its screens
+npm run test:site                 # build the site and compare its screens and its page turn with the design's
 npm run test:behaviour            # build the site, test what it does, and check its code against the design
 npm run test:site-speed           # build the site and hold it to the speed budgets
 ```
