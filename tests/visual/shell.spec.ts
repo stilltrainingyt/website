@@ -1,9 +1,9 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import type { Page } from '@playwright/test';
-import { test, expect, VIEWS, PAPERS, SHELL_PAGES, urlFor, open, settle, renderings, matchesARendering, stableShot, type Target } from '../targets';
+import { test, expect, VIEWS, PAPERS, EMPTY_PAGES, urlFor, open, settle, renderings, matchesARendering, stableShot, type Target } from '../targets';
 
-// Step 3's journal around empty pages, at every width, in both papers. The baselines are the
+// Step 3's journal around the pages still empty, at every width, in both papers. The baselines are the
 // design files themselves: each page loaded as it is, its scripts run, then its contents
 // removed (`npm run baselines:shell`). The site's empty pages must match one of the
 // renderings pixel for pixel, as in pages.spec.ts.
@@ -33,7 +33,7 @@ for (const view of VIEWS) {
         colorScheme: paper,
       });
 
-      for (const pageName of SHELL_PAGES) {
+      for (const pageName of EMPTY_PAGES) {
         test(pageName, async ({ page, target }, testInfo) => {
           const url = urlFor(target, view, pageName);
           const name = `shell/${view.name}/${paper}/${pageName}.png`;

@@ -2,6 +2,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import type { Page } from '@playwright/test';
 import { test, expect, PAGES, VIEWS, PAPERS, urlFor, open, scrollStops, scrollTo, restless, renderings, matchesARendering, masks, stableShot } from '../targets';
+import { FIXTURE_PAGES } from '../fixtures/sites';
 
 // Every page, at every width, in both papers, one screen at a time from top to
 // bottom. `npm run baselines` renders the design files into baselines;
@@ -12,6 +13,9 @@ import { test, expect, PAGES, VIEWS, PAPERS, urlFor, open, scrollStops, scrollTo
 // and a screen passes only when it matches one of them pixel for pixel; a
 // changed page matches none of them. Screens with more than one rendering are
 // named in the report.
+//
+// The fixtures project draws each page from the design's samples written as content files
+// (tests/fixtures), built into a site; a page with no samples yet is skipped.
 
 const LOADS = 3;
 
@@ -45,6 +49,8 @@ for (const view of VIEWS) {
 
       for (const pageName of PAGES) {
         test(pageName, async ({ page, target }, testInfo) => {
+          test.skip(target === 'fixture' && !FIXTURE_PAGES[pageName], 'No design sample draws this page yet');
+          if (target !== 'reference' && testInfo.config.updateSnapshots === 'all') throw new Error('Baselines are made from the design files only');
           const url = urlFor(target, view, pageName);
           const name = (i: number) => `${view.name}/${paper}/${pageName}/${String(i + 1).padStart(2, '0')}.png`;
           const file = (i: number) => testInfo.snapshotPath(name(i), { kind: 'screenshot' });

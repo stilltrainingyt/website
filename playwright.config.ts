@@ -34,7 +34,11 @@ export default defineConfig<{ target: Target }>({
     // page turn against the design's own, with the same retries for the rare second rendering;
     // what it does; and its speed budgets.
     { name: 'site', testMatch: ['visual/shell.spec.ts', 'visual/turn.spec.ts'], retries: 3, use: { browserName: 'chromium', target: 'site' } },
-    { name: 'behaviour', testMatch: ['behaviour/*.spec.ts', 'visual/port.spec.ts'], use: { browserName: 'chromium', target: 'site' } },
+    // The design's samples as content files, built into sites of their own (tests/fixtures), and
+    // their pages' screens against the design's baselines, with the same retries.
+    { name: 'fixture-sites', testMatch: 'fixtures/build.setup.ts' },
+    { name: 'fixtures', testMatch: 'visual/pages.spec.ts', dependencies: ['fixture-sites'], timeout: 240_000, retries: 3, use: { browserName: 'chromium', target: 'fixture' } },
+    { name: 'behaviour', testMatch: ['behaviour/*.spec.ts', 'visual/port.spec.ts'], dependencies: ['fixture-sites'], use: { browserName: 'chromium', target: 'site' } },
     { name: 'site-speed', testMatch: 'speed/*.spec.ts', use: { browserName: 'chromium', target: 'site' } },
   ],
 });

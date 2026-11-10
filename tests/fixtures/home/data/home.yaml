@@ -1,0 +1,146 @@
+# The home page's words, entry by entry. A value written once is the same in both editions;
+# one written with desktop: and pocket: is different in each. A list of lines is set with a
+# line break between each line. Notes say where only one edition uses a value.
+# The track cards' titles are the tracks' labels in taxonomy.json. What each card lists, and
+# what the cabinet's folders hold, come from the content files.
+home:
+  cover:
+    eyebrow:
+      desktop: Field journal · vol. 01 · no. 1
+      pocket: Pocket edition · vol. 01
+    title: [Still, Training]
+    lede:
+      desktop: Always one more episode. A channel about how machine learning actually works — built from first principles, on graph paper, at the speed of someone still learning it.
+      pocket: Always one more episode. How machine learning actually works, built from first principles on graph paper.
+    syllabus: Open the syllabus
+    episodes: See the episodes        # desktop only
+    byHand: Try one idea by hand      # pocket only
+    echo: tap Echo for one more
+
+  premise:
+    eyebrow:
+      desktop: Entry 01 · the premise
+      pocket: Page 01 · the premise
+    title: Teaching the thing while I learn the thing
+    intro:
+      desktop: Most explanations of machine learning start three ideas too late. They assume you already accept that a loss is a surface, that a gradient points somewhere useful, that a token is a sensible unit. This channel starts earlier than that and never skips a step, because the person making it needs every step too.
+      pocket: Most explanations of machine learning start three ideas too late. This channel starts earlier and never skips a step, because the person making it needs every step too.
+    pad:
+      intro: "Every episode turns the same four pages, in the same order. Here they are for one idea, the gradient:"
+      pages:
+        - title: Page 1 · why it had to exist
+          text: A model starts as random numbers. Something has to say which way to nudge each one. Without that, training is guessing.
+        - title: Page 2 · what it is
+          text: "The slope of the loss where you are standing. One number per weight: how much worse things get if that weight goes up a little."
+        - title: Page 3 · how it runs
+          text:
+            desktop: Move each weight a small step against its slope. Measure again. Repeat. Entry 03 lets you do it by hand.
+            pocket: Move each weight a small step against its slope. Measure again. Repeat. You can do this by hand two pages on.
+        - title: Page 4 · what it costs
+          text: One full pass through the model per step, and a step size you must choose. Too small is slow. Too big never settles.
+    spec:                             # desktop only
+      - label: Runs on
+        text: A laptop, a Raspberry Pi, and whatever hardware you already own.
+      - label: Bias
+        text: Local and on-device first. No uploads, low inference cost, small models taken seriously.
+      - label: Never
+        text: Prerequisites. If an episode needs an idea, the episode teaches the idea.
+    note: ["Rule of the notebook:", "if I can’t draw it,", "I don’t understand it yet."]
+    scrap:                            # desktop only
+      title: Pinned from the production sheet
+      lines:
+        - { label: slide lane, value: 1664 × 760 }
+        - { label: player band, value: "176 px, kept empty" }
+        - { label: thumbnail, value: 1280 × 720 }
+        - { label: watermark, value: 150 × 150 }
+        - { label: sting, value: "120 fps, delivered at 60" }
+    aside:                            # desktop only: the handwritten line under the two notes
+      - — the numbers that stop a slide
+      - from being unreadable on a phone.
+      - (both notes are loose. drag them.)
+    noteHint: The note is loose. Drag it.   # pocket only
+
+  tracks:
+    eyebrow:
+      desktop: Entry 02 · three tracks
+      pocket: Page 02 · three tracks
+    title: Three shelves, one notebook
+    lede:
+      desktop: The channel splits by how much you already have in your hands, not by how advanced the vocabulary sounds.
+      pocket: Swipe across the cards. Turn one over to see what it leaves you able to do.
+    back: When you finish it, you can
+    # One card per track in taxonomy.json. chip is the words on the chip at the card's foot,
+    # and look its look, plain, open or solid, which the track's chip on the cover shares.
+    cards:
+      foundations:
+        number: Track 01 · 8–14 min
+        about: One idea per episode, drawn from zero. No prerequisites, ever.
+        chip: Start here
+        look: solid
+        backNumber:
+          desktop: Track 01 · the back of the card
+          pocket: Track 01 · the back
+        outcomes:
+          - Work one training step out on paper
+          - Say what a token is without the word “token”
+          - Read a loss curve and tell what went wrong
+        needs: "needs: basic arithmetic"
+      course:
+        number: Track 02 · 25–50 min
+        about: Full units, in order, with worked numericals and a check at every step.
+        chip: Sequential
+        look: plain
+        backNumber:
+          desktop: Track 02 · the back of the card
+          pocket: Track 02 · the back
+        outcomes:
+          - Write a training loop with no tutorial open
+          - Pick a quantization level and say what it costs
+          - Fit a large model into the memory you have
+        needs: "needs: track 01"
+      e3:
+        number: Track 03 · 15–30 min
+        about: Reading a paper out loud, reproducing it on real hardware, reporting what broke.
+        chip: Open notebook
+        look: open
+        backNumber:
+          desktop: Track 03 · the back of the card
+          pocket: Track 03 · the back
+        outcomes:
+          - Find the one equation a paper depends on
+          - Reproduce a headline number, or say why not
+          - Tell a real result from a lucky run
+        needs: "needs: patience"
+
+  byHand:
+    eyebrow:
+      desktop: Entry 03 · by hand
+      pocket: Page 03 · by hand
+    title: Walk downhill yourself
+    lede:
+      desktop: The curve shows how wrong a model is for each value of one weight. Drag the dot anywhere on it, pick a step size, and walk it to the bottom.
+      pocket: The curve shows how wrong a model is for each value of one weight. Touch the curve to place the dot, pick a step size, then step.
+    hint:
+      desktop: Try step size 1.00, then 1.10. One never settles; the other leaves the page.
+      pocket: Try 1.00, then 1.10. One never settles. The other leaves the page.
+
+  cabinet:
+    eyebrow:
+      desktop: Entry 04 · the cabinet
+      pocket: Page 04 · the cabinet
+    title: Pull a folder
+    lede:
+      desktop: Not everything fits in a video. The writing and the builds are filed here. Open a folder to see what is inside.
+      pocket: The writing and the builds are filed here. Tap a folder to open it.
+    inside: "{count} inside"          # on each folder: how many sheets it holds
+    articles:
+      tab: File A
+      label: My articles
+      all: All writing →
+    projects:
+      tab: File B
+      label: My projects
+      all:                            # {count} is the number of projects
+        desktop: "All {count} projects →"
+        pocket: "All {count} →"
+      inProgress: In progress         # the chip on a project still in progress
