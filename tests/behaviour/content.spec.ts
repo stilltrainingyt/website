@@ -116,6 +116,7 @@ const SAMPLE: Files = {
   'data/taxonomy.json': DATA('taxonomy.json'),
   'data/site.json': DATA('site.json'),
   'data/upcoming.yaml': UPCOMING,
+  'data/home.yaml': DATA('home.yaml'),
   'content/videos/gradient-descent-by-hand.md': VIDEO,
   'content/transcripts/gradient-descent-by-hand.vtt': VTT,
   'content/videos/reinforcement-learning-unit-1.md': COURSE_VIDEO,
@@ -272,6 +273,88 @@ test.describe('content files', () => {
     test('a file name that is not a page address', async ({}, testInfo) => {
       await stops(testInfo, changed({ 'content/projects/contextcore.md': null, 'content/projects/Context Core.md': PROJECT_FILE }),
         'Context Core.md: the file name is the page address');
+    });
+  });
+
+  // Step 5: the home page's words, and what its track cards and cabinet list.
+  test.describe('the home page', () => {
+    const HOME = SAMPLE['data/home.yaml'];
+
+    test('its words file stops the build when a field or a track\'s card is missing', async ({}, testInfo) => {
+      await stops(testInfo, changed({ 'data/home.yaml': edit(HOME, /^ {4}title: Walk downhill yourself\n/m, '') }),
+        'home → home', /byHand\.title\W+Required/);
+      await stops(testInfo, changed({ 'data/home.yaml': edit(HOME, /^ {6}e3:\n(?: {8}.*\n| {10}.*\n)+/m, '') }),
+        'home → home', 'tracks.cards.e3');
+      await stops(testInfo, changed({ 'data/home.yaml': `${HOME}about:\n  title: Elsewhere\n` }),
+        `${root(testInfo)}/data/home.yaml holds the home page's words under one key, home:, and nothing else`);
+      await stops(testInfo, changed({ 'data/home.yaml': null }), `${root(testInfo)}/data/home.yaml`);
+    });
+
+    test('the track cards list each track\'s latest episodes, and the cabinet its newest articles and first projects', async ({ page }, testInfo) => {
+      const video = (title: string, track: string, published: string) => `---\ntitle: ${title}\nyoutubeId: AbC123xYz_${published.slice(-1)}\npublished: ${published}\ntrack: ${track}\ntopic: ai\nduration: "10:00"\nsummary: A sample.\n---\nNotes.\n`;
+      const article = (title: string, published: string, extra = '') => `---\ntitle: ${title}\npublished: ${published}\ntrack: foundations\ntopic: tech\nsummary: The summary of ${title}.\n${extra}---\nText.\n`;
+      const project = (title: string, order: number, extra = '') => `---\ntitle: ${title}\nkind: Tool\ngroup: Tools\nsummary: The summary of ${title}.\ntags: [One, Two]\norder: ${order}\n${extra}---\n`;
+      const files = changed({
+        'data/upcoming.yaml': `${UPCOMING}ST-004:\n  title: Attention as a lookup table\n  track: foundations\n  stage: planned\nST-005:\n  title: Training loops end to end\n  track: course\n  stage: scripted\n`,
+        'content/videos/what-a-weight-is.md': video('What a weight is', 'foundations', '2026-10-01'),
+        'content/transcripts/what-a-weight-is.vtt': VTT,
+        'content/videos/why-tokenizers-break.md': video('Why tokenizers break', 'foundations', '2026-11-05'),
+        'content/transcripts/why-tokenizers-break.vtt': VTT,
+        'content/articles/oldest.md': article('Oldest', '2026-09-01'),
+        'content/articles/drafted.md': article('Drafted', '2026-10-01', 'cabinet:\n  tags: [{ text: Draft, look: open }, Reading notes]\n'),
+        'content/articles/newest.md': article('Newest', '2026-11-04', 'cabinet:\n  summary: A shorter line.\n'),
+        'content/projects/shipped.md': project('Shipped', 2),
+        'content/projects/building.md': project('Building', 3, 'inProgress: true\n'),
+        'content/projects/relabelled.md': project('Relabelled', 4, 'cabinet:\n  summary: The cabinet\'s own line.\n  tags: [Desktop]\n'),
+        'content/projects/fifth.md': project('Fifth', 5),
+        'content/projects/sixth.md': project('Sixth', 6),
+        'content/projects/seventh.md': project('Seventh', 7),
+      });
+      const built = await build(testInfo, files);
+      expect(built.ok, built.output.slice(-3000)).toBe(true);
+      // The built page, read as the desktop edition (edition.js removes the pocket's parts).
+      await page.setViewportSize({ width: 1440, height: 900 });
+      await page.route('http://built.test/', (route) => route.fulfill({ path: testInfo.outputPath('dist', 'index.html'), contentType: 'text/html; charset=utf-8' }));
+      await page.route(/^http:\/\/built\.test\/.+/, (route) => route.fulfill({ status: 404, body: '' }));
+      await page.goto('http://built.test/');
+      const items = (n: number) => page.locator('#deck .flipcard').nth(n).locator('.front li').evaluateAll((lis) => lis.map((li) => {
+        const a = li.querySelector('a');
+        return a ? `${li.className}: ${a.textContent} → ${a.getAttribute('href')}` : `${li.className}: ${li.textContent}`;
+      }));
+      // Published episodes newest first, linked; then planned ones in slate order, as text; four at most.
+      expect(await items(0)).toEqual([
+        'ttl: Why tokenizers break → /episodes/why-tokenizers-break/',
+        'ttl: Gradient descent, by hand → /episodes/gradient-descent-by-hand/',
+        'ttl: What a weight is → /episodes/what-a-weight-is/',
+        ': Backpropagation without the chain-rule fear',
+      ]);
+      expect(await items(1)).toEqual(['ttl: Reinforcement learning, unit 1 → /episodes/reinforcement-learning-unit-1/', ': Training loops end to end']);
+      expect(await items(2)).toEqual([': SliceGPT, reproduced on one laptop']);
+      // The cards are titled with the tracks' labels.
+      expect(await page.locator('#deck .front h3').allTextContents()).toEqual(['Foundations', 'Course', 'E³']);
+
+      const sheets = (drawer: string) => page.locator(`${drawer} .sheet`).evaluateAll((ss) => ss.map((s) => [
+        s.querySelector('h3')!.textContent, s.querySelector('p')!.textContent,
+        [...s.querySelectorAll('.chip')].map((c) => `${c.className}: ${c.textContent}`).join(', '),
+      ].join(' | ')));
+      // The four newest articles, each with its topic, or what its cabinet fields give.
+      expect(await sheets('#drawer-articles')).toEqual([
+        'Newest | A shorter line. | chip: Tech',
+        'A capable model on a Raspberry Pi | What fits, what does not, and how slow slow really is. | chip: Tech',
+        'Gradient descent, worked out | Every step of the walk, written down. | chip: AI',
+        'Drafted | The summary of Drafted. | chip open: Draft, chip: Reading notes',
+      ]);
+      // The first six projects in order, each with its tags and whether it is in progress.
+      expect(await sheets('#drawer-projects')).toEqual([
+        'ContextCore | An AI chat desktop app where every chat is its own persistent, self-contained workspace. | chip: Local AI',
+        'Shipped | The summary of Shipped. | chip: One, chip: Two',
+        'Building | The summary of Building. | chip: One, chip: Two, chip open: In progress',
+        'Relabelled | The cabinet\'s own line. | chip: Desktop',
+        'Fifth | The summary of Fifth. | chip: One, chip: Two',
+        'Sixth | The summary of Sixth. | chip: One, chip: Two',
+      ]);
+      expect(await page.locator('#files .f-meta').allTextContents()).toEqual(['4 inside', '6 inside']);
+      expect(await page.locator('#drawer-projects .mini').textContent()).toBe('All 7 projects →');
     });
   });
 });

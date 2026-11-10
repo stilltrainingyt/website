@@ -106,6 +106,16 @@ function shelfRules(item: { track: string; mode?: string }, ctx: z.RefinementCtx
   }
 }
 
+// A chip, as the design draws them: plain, or with the look `open` (an outline) or `solid`
+// (filled). Written as its words alone for a plain chip.
+export const LOOKS = ['plain', 'open', 'solid'] as const;
+const look = oneOf(LOOKS);
+const chip = z.union([text, z.strictObject({ text, look })], required()).transform((value) => (typeof value === 'string' ? { text: value, look: 'plain' as const } : value));
+
+// What the home page's cabinet shows of a file in place of its own summary and chips, each only
+// when given (your decision, step 5).
+const cabinet = blank(z.strictObject({ summary: blank(text), tags: blank(z.array(chip).min(1, 'Required')) }));
+
 // A video, src/content/videos/<address>.md, with its notes below the front matter.
 export const Video = z.strictObject({
   title: text,
@@ -156,6 +166,7 @@ export const Article = z.strictObject({
   pinned: flag,
   hot: flag,
   video: blank(z.string().regex(/^episodes\/[a-z0-9]+(?:-[a-z0-9]+)*$/, 'episodes/<the video\'s address>')),
+  cabinet,
 }).superRefine((article, ctx) => {
   shelfRules(article, ctx);
   if (article.updated && article.updated < article.published) {
@@ -172,6 +183,7 @@ export const Project = z.strictObject({
   tags: list(text),
   inProgress: flag,
   order: z.number(required()).int(),
+  cabinet,
 });
 
 // A planned episode in src/data/upcoming.yaml, listed under its slate number.
@@ -181,6 +193,67 @@ export const Upcoming = z.strictObject({
   track,
   stage: oneOf(STAGES),
   runtime: blank(time),
+});
+
+// The home page's words, src/data/home.yaml, all under its one key, home:. A value written once
+// is the same in both editions; one written as desktop: and pocket: differs between them. A list
+// of lines is set with a line break between each. The words on controls, and the words the
+// design's scripts write themselves (Episode 001, Page 1 of 4, Open), stay in the page's markup.
+const both = <T extends z.ZodType>(schema: T) => z.union([
+  z.strictObject({ desktop: schema, pocket: schema }),
+  schema.transform((value) => ({ desktop: value, pocket: value })),
+], required('one value, or a desktop: and a pocket: value'));
+const lines = z.array(text, required()).min(1, 'Required');
+const counted = text.refine((value) => value.includes('{count}'), 'says {count} where the number goes');
+const heading = { eyebrow: both(text), title: text };
+
+// One track card: its front, then its back. The card's title is the track's label in
+// src/data/taxonomy.json, and the look of its chip is also the look of the track's chip on
+// the cover.
+const Card = z.strictObject({
+  number: text,
+  about: text,
+  chip: text,
+  look,
+  backNumber: both(text),
+  outcomes: lines,
+  needs: text,
+});
+
+export const Home = z.strictObject({
+  cover: z.strictObject({
+    eyebrow: both(text),
+    title: lines,
+    lede: both(text),
+    syllabus: text,
+    episodes: text,
+    byHand: text,
+    echo: text,
+  }),
+  premise: z.strictObject({
+    ...heading,
+    intro: both(text),
+    pad: z.strictObject({ intro: text, pages: z.array(z.strictObject({ title: text, text: both(text) }), required()).min(1, 'Required') }),
+    spec: z.array(z.strictObject({ label: text, text }), required()).min(1, 'Required'),
+    note: lines,
+    scrap: z.strictObject({ title: text, lines: z.array(z.strictObject({ label: text, value: text }), required()).min(1, 'Required') }),
+    aside: lines,
+    noteHint: text,
+  }),
+  tracks: z.strictObject({
+    ...heading,
+    lede: both(text),
+    back: text,
+    cards: z.record(z.enum(ids(taxonomy.tracks)), Card, required()),
+  }),
+  byHand: z.strictObject({ ...heading, lede: both(text), hint: both(text) }),
+  cabinet: z.strictObject({
+    ...heading,
+    lede: both(text),
+    inside: counted,
+    articles: z.strictObject({ tab: text, label: text, all: text }),
+    projects: z.strictObject({ tab: text, label: text, all: both(counted), inProgress: text }),
+  }),
 });
 
 // A transcript, src/content/transcripts/<address>.vtt: the caption file YouTube Studio gives.

@@ -4,8 +4,8 @@
 import fs from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { defineCollection } from 'astro:content';
-import { file, glob, type Loader } from 'astro/loaders';
-import { ROOT, SLATE, Article, Project, Transcript, Upcoming, Video, addressOf, parseVtt } from './components/content';
+import { file, glob, type Loader, type LoaderContext } from 'astro/loaders';
+import { ROOT, SLATE, Article, Home, Project, Transcript, Upcoming, Video, addressOf, parseVtt } from './components/content';
 
 // Astro's loaders log some faults and carry on without the file: one they cannot read or
 // parse, an entry with no id. While a loader loads, each fault it logs stops the build instead.
@@ -94,10 +94,33 @@ const upcoming: Loader = {
   },
 };
 
+// The home page's words: one entry, under the file's one key, home:. Any other key is refused
+// before its contents are checked, so the message names the key rather than the fields it lacks.
+const home: Loader = {
+  name: 'home-loader',
+  load: async (context) => {
+    const filePath = `${ROOT}/data/home.yaml`;
+    const oneKey = `${filePath} holds the home page's words under one key, home:, and nothing else`;
+    const parseData: LoaderContext['parseData'] = async (entry) => {
+      if (entry.id !== 'home') throw new Error(`${oneKey} (found ${entry.id})`);
+      return context.parseData(entry);
+    };
+    try {
+      await strict(file(`./${filePath}`)).load({ ...context, parseData });
+    } catch (error) {
+      const message = (error as Error).message;
+      throw new Error(message.startsWith(oneKey) ? message : `${filePath}: ${message}`);
+    }
+    const keys = [...context.store.keys()];
+    if (keys.length !== 1 || keys[0] !== 'home') throw new Error(`${oneKey} (found ${keys.join(', ') || 'nothing'})`);
+  },
+};
+
 export const collections = {
   videos: defineCollection({ loader: markdown('videos'), schema: Video }),
   transcripts: defineCollection({ loader: transcripts, schema: Transcript }),
   articles: defineCollection({ loader: markdown('articles'), schema: Article }),
   projects: defineCollection({ loader: markdown('projects'), schema: Project }),
   upcoming: defineCollection({ loader: upcoming, schema: Upcoming }),
+  home: defineCollection({ loader: home, schema: Home }),
 };
