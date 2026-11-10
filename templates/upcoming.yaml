@@ -1,0 +1,8 @@
+# A planned episode. Copy these lines into src/data/upcoming.yaml and put its slate number
+# in place of ST-000. When the video goes up, its entry leaves that file in the same pull
+# request that adds its video file.
+ST-000:
+  title:       # the working title
+  track:       # foundations, course or e3
+  stage:       # planned, scripted, recording or cutting
+  runtime:     # optional target, in quotes, e.g. "14:10"
