@@ -1,6 +1,7 @@
 /* The pocket edition's script from design-reference/pocket.html, run only below 900 px
-   wide. It differs from the design only as tests/visual/port.ts lists: the allowed changes and
-   lines left out until the page they need arrives. The page router comes over in step 4. */
+   wide. It differs from the design only as tests/visual/port.ts lists: the allowed changes,
+   each page's parts found again in every page a turn places (router.js), and lines left out
+   until the page they need arrives. */
 if(!window.matchMedia("(min-width:900px)").matches){
 (function(){
   "use strict";
@@ -20,7 +21,10 @@ if(!window.matchMedia("(min-width:900px)").matches){
   function themePaint(){var d=isDark(); themeBtns.forEach(function(b){b.textContent=d?"Light paper":"Dark paper"; b.setAttribute("aria-pressed",d?"true":"false");});}
   var st=load("st-theme",null); if(st==="dark"||st==="light")root.setAttribute("data-theme",st);
   themePaint();
+  function themeParts(themeBtns){
   themeBtns.forEach(function(b){b.addEventListener("click",function(){var n=isDark()?"light":"dark"; root.setAttribute("data-theme",n); save("st-theme",n); themePaint();});});
+  }
+  themeParts(themeBtns); window.addEventListener("st:placed",function(e){themeBtns=all("[data-theme-toggle]"); themeParts(all("[data-theme-toggle]",e.detail)); themePaint();});
 
   /* dock and jump links */
   var dockBtns=all(".dock button"), dockIds=dockBtns.map(function(b){return b.getAttribute("data-go");});
@@ -53,9 +57,11 @@ if(!window.matchMedia("(min-width:900px)").matches){
   }
   function ask(){if(!queued){queued=true;requestAnimationFrame(run);}}
   window.addEventListener("scroll",ask,{passive:true}); window.addEventListener("resize",ask,{passive:true}); run();
+  window.addEventListener("st:placed",function(){leaves=all("[data-leaf]");run();});
 
   /* track cards */
   var rail=$("rail"), cards=all(".flipcard",rail), dots=all("#dots i");
+  function cardParts(cards){
   cards.forEach(function(card){
     var front=card.querySelector(".front"), back=card.querySelector(".back"); back.setAttribute("inert","");
     all("[data-flip]",card).forEach(function(b){b.addEventListener("click",function(){
@@ -63,12 +69,17 @@ if(!window.matchMedia("(min-width:900px)").matches){
       if(f){front.setAttribute("inert","");back.removeAttribute("inert");} else {back.setAttribute("inert","");front.removeAttribute("inert");}
     });});
   });
+  }
+  cardParts(cards); window.addEventListener("st:placed",function(e){cardParts(all(".flipcard",e.detail.querySelector("#rail")||e.detail));});
 
   /* folders */
-  all(".folder").forEach(function(f){var d=$(f.getAttribute("aria-controls")), hint=f.querySelector(".f-hint");
+  function folderParts(scope){
+  all(".folder",scope).forEach(function(f){var d=$(f.getAttribute("aria-controls")), hint=f.querySelector(".f-hint");
     all(".sheet",d).forEach(function(s,i){s.style.setProperty("--n",String(i));});
     f.addEventListener("click",function(){var open=!f.classList.contains("open"); f.classList.toggle("open",open); f.setAttribute("aria-expanded",open?"true":"false");
       d.hidden=!open; hint.textContent=open?"Close":"Open";});});
+  }
+  folderParts(document); window.addEventListener("st:placed",function(e){folderParts(e.detail);});
 
 })();
 }

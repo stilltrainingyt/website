@@ -16,6 +16,9 @@ export function routeOf(page: PageName): Route | '' {
   return page;
 }
 
+// Each entry's address. src/scripts/router.js turns to the same addresses (its addressOf).
+export const addressOf = (route: Route): string => (route === 'home' ? '/' : `/${route}/`);
+
 // Whether an entry is the current one, written as the design's router writes it.
 export const currentAttr = (route: Route, current: Route | ''): 'true' | 'false' => (route === current ? 'true' : 'false');
 

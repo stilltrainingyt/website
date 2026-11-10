@@ -9,8 +9,9 @@ import { test, expect, VIEWS, urlFor, settle, serveSite } from '../targets';
 // are the starting point every later step is measured against.
 //
 // While the site's pages are empty (step 3) its home page cannot scroll, so the test gives
-// the empty page ten screens of height and scrolls the journal around it; and until the
-// router arrives (step 4) there is no page turn to time.
+// the empty page ten screens of height and scrolls the journal around it. On the site the page
+// turn (step 4) goes to the episodes page's own address: its file is fetched and its page
+// placed, and all of that counts as the turn's work.
 const RATES = [1, 4, 6];
 const SCROLL_MS = 8000;
 const EDITIONS = [VIEWS[0], VIEWS[2]];
@@ -124,7 +125,8 @@ test('home load, scroll, one page turn and one control', async ({ browser, targe
       const sorted = [...scroll.gaps].sort((a, b) => a - b);
 
       // One page turn, where there is a router: back to the top, then the Episodes entry,
-      // timed until the turn's timers end.
+      // timed until the turn's timers end. The design turns at once; the site once the page's
+      // file has come (announced by st:turned as the turn starts).
       await page.evaluate(() => scrollTo({ top: 0, behavior: 'instant' }));
       await page.waitForTimeout(500);
       let turnMs: number | null = null;
@@ -137,12 +139,16 @@ test('home load, scroll, one page turn and one control', async ({ browser, targe
             '.tabs [data-route="episodes"], .pnav [data-route="episodes"], .dock [data-route="episodes"]',
           )].find((el) => el.offsetParent !== null);
           if (!link) throw new Error('No visible Episodes link to turn the page with');
+          const started = new Promise((done) => addEventListener('st:turned', done, { once: true }));
           link.click();
+          if (!document.querySelector('.page.arriving')) await started;
           await new Promise((done) => setTimeout(done, 1000));
         });
         turnMs = (await busyMs(cdp)) - turn0;
         turnLongTasks = (await page.evaluate(() => (window as unknown as { longTasks: number[] }).longTasks.splice(0))).length;
-        expect(await page.evaluate(() => location.hash)).toBe('#episodes');
+        const at = await page.evaluate(() => ({ address: location.pathname, hash: location.hash, pages: document.querySelectorAll('[data-page]').length }));
+        if (target === 'site') expect(at).toEqual({ address: '/episodes/', hash: '', pages: 1 });
+        else expect(at.hash).toBe('#episodes');
       }
 
       // One control pressed for real, timed from the press to the next paint (the page's

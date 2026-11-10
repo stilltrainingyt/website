@@ -80,6 +80,32 @@ export async function serveSite(context: BrowserContext): Promise<void> {
   });
 }
 
+// A design page's contents as written: the inside of its <div class="page" data-page="…">.
+export function designPage(edition: Edition, name: PageName): string {
+  const html = designHtml(edition);
+  const open = new RegExp(`<div class="page" data-page="${name}"[^>]*>`).exec(html);
+  if (!open) throw new Error(`${edition}: no ${name} page`);
+  const tags = /<div\b|<\/div>/g;
+  tags.lastIndex = open.index + open[0].length;
+  for (let depth = 1, m; (m = tags.exec(html));) {
+    depth += m[0] === '</div>' ? -1 : 1;
+    if (depth === 0) return html.slice(open.index + open[0].length, m.index);
+  }
+  throw new Error(`${edition}: the ${name} page never closes`);
+}
+
+// Until each page's content arrives, a test can stand the design's own contents in for a
+// site page: the built file at `address`, its empty page filled with `contents`. Registered
+// after serveSite, so it answers first.
+export async function standIn(context: BrowserContext, address: string, contents: string): Promise<void> {
+  const file = path.join(SITE_DIR, address, address.endsWith('/') ? 'index.html' : '');
+  const built = fs.readFileSync(file, 'utf8');
+  const empty = /(<div class="page" data-page="[a-z]+">)(<\/div>)/;
+  if (!empty.test(built)) throw new Error(`${address}: no empty page to fill`);
+  const body = built.replace(empty, (_, open, close) => `${open}${contents}${close}`);
+  await context.route(`${SITE_ORIGIN}${address}`, (route) => route.fulfill({ contentType: 'text/html; charset=utf-8', body }));
+}
+
 // Open a page for screenshots. Chrome keeps the fractional pixel offset a 3D
 // layer had when it was first drawn, and during loading that depends on when the
 // fonts arrived: the desktop deck's text then lands a fraction of a pixel apart

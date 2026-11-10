@@ -30,9 +30,10 @@ export default defineConfig<{ target: Target }>({
     { name: 'materials', testMatch: ['visual/pages.spec.ts', 'visual/materials.spec.ts'], timeout: 240_000, retries: 3, use: { browserName: 'chromium', target: 'materials' } },
     { name: 'selfcheck', testMatch: 'visual/selfcheck.spec.ts', retries: 3, use: { browserName: 'chromium', target: 'reference' } },
     { name: 'speed', testMatch: 'speed/*.spec.ts', use: { browserName: 'chromium', target: 'reference' } },
-    // The built site (npm run build first): its screens against the design's baselines, with
-    // the same retries for the rare second rendering; what it does; and its speed budgets.
-    { name: 'site', testMatch: 'visual/shell.spec.ts', retries: 3, use: { browserName: 'chromium', target: 'site' } },
+    // The built site (npm run build first): its screens against the design's baselines, and its
+    // page turn against the design's own, with the same retries for the rare second rendering;
+    // what it does; and its speed budgets.
+    { name: 'site', testMatch: ['visual/shell.spec.ts', 'visual/turn.spec.ts'], retries: 3, use: { browserName: 'chromium', target: 'site' } },
     { name: 'behaviour', testMatch: ['behaviour/*.spec.ts', 'visual/port.spec.ts'], use: { browserName: 'chromium', target: 'site' } },
     { name: 'site-speed', testMatch: 'speed/*.spec.ts', use: { browserName: 'chromium', target: 'site' } },
   ],

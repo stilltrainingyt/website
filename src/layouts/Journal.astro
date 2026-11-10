@@ -2,7 +2,9 @@
 // The journal both editions share, around one page: markup as in design-reference/, with each
 // edition's own parts marked data-edition. desktop.css applies from 900 px wide and pocket.css
 // below; edition.css hides the other edition's parts; each edition's script runs only at its
-// own widths, and edition.js loads the page again when the width crosses 900 px.
+// own widths, and edition.js loads the page again when the width crosses 900 px. The design's
+// page router, last as in the design, turns to the next page's address by fetching its file
+// and placing its page next to this one.
 import wrapperCss from '../styles/wrapper.css?raw';
 import editionCss from '../styles/edition.css?raw';
 import tokensCss from '../styles/tokens.css?url';
@@ -11,6 +13,7 @@ import pocketCss from '../styles/pocket.css?url';
 import editionJs from '../scripts/edition.js?raw';
 import desktopJs from '../scripts/desktop.js?url';
 import pocketJs from '../scripts/pocket.js?url';
+import routerJs from '../scripts/router.js?url';
 import Frame from '../components/Frame.astro';
 import Tabs from '../components/Tabs.astro';
 import Dock from '../components/Dock.astro';
@@ -57,5 +60,6 @@ const TITLES: Record<PageName, string> = {
 <script is:inline set:html={editionJs}></script>
 <script is:inline src={desktopJs}></script>
 <script is:inline src={pocketJs}></script>
+<script is:inline src={routerJs}></script>
 </body>
 </html>

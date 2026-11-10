@@ -1,10 +1,10 @@
 ---
 // The desktop's page strip above each page, as in design-reference/desktop.html, with the
-// current page lit as the design's router lights it. Its links keep the design's # addresses
-// until step 4 gives every page its own.
-import { currentAttr, type Route } from './nav';
+// current page lit as the design's router lights it. Its links name the site's addresses in
+// place of the design's # addresses, so they also work opened in a new tab.
+import { addressOf, currentAttr, type Route } from './nav';
 
 interface Props { current: Route | '' }
 const { current } = Astro.props;
 ---
-<nav class="pnav" aria-label="Pages" data-edition="desktop"><a class="mini" href="#home" data-route="home" aria-current={currentAttr('home', current)}>Home</a><a class="mini" href="#episodes" data-route="episodes" aria-current={currentAttr('episodes', current)}>Episodes</a><a class="mini" href="#writing" data-route="writing" aria-current={currentAttr('writing', current)}>Writing</a><a class="mini" href="#projects" data-route="projects" aria-current={currentAttr('projects', current)}>Projects</a><a class="mini" href="#about" data-route="about" aria-current={currentAttr('about', current)}>About</a><a class="mini" href="#subscribe" data-route="subscribe" aria-current={currentAttr('subscribe', current)}>Subscribe</a></nav>
+<nav class="pnav" aria-label="Pages" data-edition="desktop"><a class="mini" href={addressOf('home')} data-route="home" aria-current={currentAttr('home', current)}>Home</a><a class="mini" href={addressOf('episodes')} data-route="episodes" aria-current={currentAttr('episodes', current)}>Episodes</a><a class="mini" href={addressOf('writing')} data-route="writing" aria-current={currentAttr('writing', current)}>Writing</a><a class="mini" href={addressOf('projects')} data-route="projects" aria-current={currentAttr('projects', current)}>Projects</a><a class="mini" href={addressOf('about')} data-route="about" aria-current={currentAttr('about', current)}>About</a><a class="mini" href={addressOf('subscribe')} data-route="subscribe" aria-current={currentAttr('subscribe', current)}>Subscribe</a></nav>
