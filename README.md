@@ -10,6 +10,20 @@ Source code for [stilltraining.in](https://stilltraining.in), the personal brand
 
 A static [Astro](https://astro.build) site, served by Cloudflare. No server or database of its own.
 
+## Content
+
+Every video, transcript, article, project and planned episode is a text file. Blank copies to start from are in `templates/`.
+
+- `src/content/videos/<address>.md`: a video, with its notes below the front matter
+- `src/content/transcripts/<address>.vtt`: its transcript, the caption file YouTube Studio gives
+- `src/content/articles/<address>.md`: an article
+- `src/content/projects/<address>.md`: a project
+- `src/data/upcoming.yaml`: the production board, one entry per planned episode under its slate number
+- `src/data/taxonomy.json`: the tracks, modes and topics, in the order the pages show them
+- `src/data/site.json`: the site's name, tagline and links
+
+The file name is the page address and never changes after publishing. The build checks every file's fields and the links between files (a video and its transcript, a video and its linked article, from both ends); any problem stops the build and says which file and why.
+
 ## Tests
 
 Playwright compares every page with the two design files in `design-reference/`.
@@ -23,7 +37,7 @@ npm run test:materials            # the design drawn with the project's tokens, 
 npm run test:selfcheck            # prove small changes are caught
 npm run test:speed                # the design files' timing at 1×, 4× and 6× CPU slowdown
 npm run test:site                 # build the site and compare its screens and its page turn with the design's
-npm run test:behaviour            # build the site, test what it does, and check its code against the design
+npm run test:behaviour            # build the site, test what it does, check its code against the design, and prove the content checks stop a bad build
 npm run test:site-speed           # build the site and hold it to the speed budgets
 ```
 
