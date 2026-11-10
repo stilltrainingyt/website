@@ -178,13 +178,13 @@ export type Omission = { script: Script; needs: string } & ({ section: string } 
 
 export const OMITTED: Omission[] = [
   { script: 'desktop', needs: 'home', from: 'wrap.addEventListener("pointermove",function(ev){', lines: 11 },
-  { script: 'desktop', needs: 'home', section: '/* ---- the tear ---- */' },
-  { script: 'desktop', needs: 'home', section: '/* ---- the slip itself ---- */' },
+  { script: 'desktop', needs: 'subscribe', section: '/* ---- the tear ---- */' },
+  { script: 'desktop', needs: 'subscribe', section: '/* ---- the slip itself ---- */' },
   { script: 'desktop', needs: 'home', section: '/* ---- Echo: one more episode ---- */' },
   { script: 'desktop', needs: 'home', section: '/* ---- the pad: four pages, turned over the top ---- */' },
   { script: 'desktop', needs: 'home', section: '/* ---- by hand: gradient descent on loss = (weight - 3) squared ---- */' },
-  { script: 'desktop', needs: 'home', section: '/* ---- the log: filter by track, stamp what you want to watch ---- */' },
-  { script: 'desktop', needs: 'home', section: '/* ---- tape the slip back on ---- */' },
+  { script: 'desktop', needs: 'episodes', section: '/* ---- the log: filter by track, stamp what you want to watch ---- */' },
+  { script: 'desktop', needs: 'subscribe', section: '/* ---- tape the slip back on ---- */' },
   { script: 'desktop', needs: 'home', from: 'var d=deck.getBoundingClientRect();', lines: 4 },
   { script: 'pocket', needs: 'home', from: 'var cr=cover.getBoundingClientRect();', lines: 1 },
   { script: 'pocket', needs: 'about', from: 'var stamp=$("stamp");', lines: 3 },
@@ -193,8 +193,8 @@ export const OMITTED: Omission[] = [
   { script: 'pocket', needs: 'home', section: '/* loose note */' },
   { script: 'pocket', needs: 'home', from: 'rail.addEventListener("scroll",function(){', lines: 5 },
   { script: 'pocket', needs: 'home', section: '/* by hand: loss = (weight - 3) squared */' },
-  { script: 'pocket', needs: 'home', section: '/* log */' },
-  { script: 'pocket', needs: 'home', section: '/* the slip: pull down, or press, to tear */' },
+  { script: 'pocket', needs: 'episodes', section: '/* log */' },
+  { script: 'pocket', needs: 'subscribe', section: '/* the slip: pull down, or press, to tear */' },
   { script: 'router', needs: 'episode', section: '/* episode chapters */' },
   { script: 'router', needs: 'writing', section: '/* writing shelves */' },
 ];
