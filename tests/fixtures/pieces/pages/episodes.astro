@@ -1,0 +1,37 @@
+---
+// Review page (step 7): pinned, latest and hot with the samples' videos, the sort control and the
+// search box, on a leaf of the episodes page. The design's episodes page has only its board, so
+// the leaf's eyebrow and heading here are placeholders for step 8's archive.
+import { getCollection } from 'astro:content';
+import Journal from '/src/layouts/Journal.astro';
+import Highlights from '/src/components/Highlights.astro';
+import SortControl from '/src/components/SortControl.astro';
+import SearchBox from '/src/components/SearchBox.astro';
+import { highlights, videoCard } from '/src/components/pieces';
+import * as words from './words';
+
+const videos = await getCollection('videos');
+const card = (v: (typeof videos)[number]) => videoCard(v, words.watchIt);
+const picked = highlights(videos);
+const sections = [
+  { label: words.highlights.pinned, cards: picked.pinned.map(card) },
+  { label: words.highlights.latest, cards: picked.latest.map(card) },
+  { label: words.highlights.hot, cards: picked.hot.map(card) },
+];
+const editions = ['desktop', 'pocket'] as const;
+---
+<Journal page="episodes">
+{editions.map((edition) => (
+  <div class="stage" data-edition={edition}>
+  <section class="leaf" id="ep-archive" data-leaf>
+  <div class="stack">
+    <p class="eyebrow">Episodes &middot; the archive</p>
+    <h2>Every episode so far</h2>
+    <div class="stack" data-piece="highlights"><Highlights sections={sections} /></div>
+    <div class="stack" data-piece="sort"><SortControl edition={edition} id="sort-episodes" {...words.sort} /></div>
+    <div class="stack" data-piece="search"><SearchBox edition={edition} {...words.search} /></div>
+  </div>
+  </section>
+  </div>
+))}
+</Journal>

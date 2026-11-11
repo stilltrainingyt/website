@@ -1,0 +1,30 @@
+---
+// The search box (step 7, approved): the slip's form, as each edition draws it,
+// asking for words instead of an address. On the desktop, a .field form with its field and a
+// .btn; on the pocket, the same field and a full-width .btn stacked 12 px apart, as pocket's slip
+// form stacks them (its field drawn by pocket's slip-field rules, your decision, step 7). A plain
+// text field rather than type=search, which browsers draw with controls of their own. It sends
+// the words to the search page.
+interface Props {
+  edition: 'desktop' | 'pocket';
+  action: string;
+  label: string;
+  placeholder: string;
+  button: string;
+}
+const { edition, action, label, placeholder, button } = Astro.props;
+const fieldId = `search-${edition}`;
+---
+{edition === 'desktop' ? (
+  <form class="field" role="search" action={action} method="get">
+    <label class="skip" for={fieldId}>{label}</label>
+    <input id={fieldId} name="q" type="text" inputmode="search" enterkeyhint="search" autocomplete="off" placeholder={placeholder}>
+    <button class="btn" type="submit"><span class="lbl">{button}</span></button>
+  </form>
+) : (
+  <form class="field stack" style="gap:12px" role="search" action={action} method="get">
+    <label class="skip" for={fieldId}>{label}</label>
+    <input id={fieldId} name="q" type="text" inputmode="search" enterkeyhint="search" autocomplete="off" placeholder={placeholder}>
+    <button class="btn" type="submit"><span>{button}</span><span class="arrow">&#8594;</span></button>
+  </form>
+)}

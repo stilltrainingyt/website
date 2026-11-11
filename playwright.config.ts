@@ -39,6 +39,8 @@ export default defineConfig<{ target: Target }>({
     { name: 'fixture-sites', testMatch: 'fixtures/build.setup.ts' },
     { name: 'fixtures', testMatch: 'visual/pages.spec.ts', dependencies: ['fixture-sites'], timeout: 240_000, retries: 3, use: { browserName: 'chromium', target: 'fixture' } },
     { name: 'behaviour', testMatch: ['behaviour/*.spec.ts', 'visual/port.spec.ts'], dependencies: ['fixture-sites'], use: { browserName: 'chromium', target: 'site' } },
+    // The new pieces you approved in step 7, drawn on the review site's pages.
+    { name: 'pieces', testMatch: 'visual/pieces.spec.ts', dependencies: ['fixture-sites'], use: { browserName: 'chromium', target: 'fixture' } },
     { name: 'site-speed', testMatch: 'speed/*.spec.ts', use: { browserName: 'chromium', target: 'site' } },
   ],
 });

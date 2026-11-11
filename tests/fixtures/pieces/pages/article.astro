@@ -1,0 +1,30 @@
+---
+// Review page (step 7): the licence line, at the end of the design's article page in place of
+// "Suggest an edit on GitHub", with the sample article's opening and closing for context.
+import { getEntry } from 'astro:content';
+import Journal from '/src/layouts/Journal.astro';
+import LicenceLine from '/src/components/LicenceLine.astro';
+import * as words from './words';
+
+const article = (await getEntry('articles', 'gradient-descent-by-hand'))!;
+const editions = ['desktop', 'pocket'] as const;
+---
+<Journal page="article">
+{editions.map((edition) => (
+  <div class="stage" data-edition={edition}>
+  <section class="leaf " id="article-body" data-leaf>
+  <div class="stack art">
+    <div class="row"><a class="mini" href="/writing/">&#8592; All writing</a></div>
+    <p class="eyebrow">AI &middot; Foundations</p>
+    <h2 class="arttitle">{article.data.title}</h2>
+    <p class="lede">{article.data.summary}</p>
+    <hr class="hr">
+    <h3>What it costs</h3>
+    <p>To know the slope, the model has to measure how wrong it is, which means running the training data through it. That is the cost of every single step.</p>
+    <div class="row"><a class="btn ghost" href="/episodes/gradient-descent-by-hand/"><span class="lbl">Watch the episode</span><span class="arrow">&#8594;</span></a></div>
+    <div class="stack" data-piece="licence"><LicenceLine line={words.licence.line(article.data.published.getFullYear())} licence={{ label: words.licence.label, url: words.licence.url }} /></div>
+  </div>
+  </section>
+  </div>
+))}
+</Journal>

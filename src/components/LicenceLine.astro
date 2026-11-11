@@ -1,0 +1,10 @@
+---
+// The licence line (step 7, approved): the end of an article, in the place and
+// the markup of the design's "Suggest an edit on GitHub" row, which it replaces: a thin rule,
+// then the line as .small text and the licence as a .mini link.
+interface Props { line: string; licence: { label: string; url: string } }
+const { line, licence } = Astro.props;
+---
+<hr class="hr thin">
+<div class="row between"><p class="small" style="flex:1 1 220px; min-width:0">{line}</p>
+  <a class="mini" href={licence.url} target="_blank" rel="license noopener">{licence.label} &#8599;</a></div>

@@ -42,6 +42,7 @@ npm run test:speed                # the design files' timing at 1×, 4× and 6×
 npm run test:site                 # build the site and the design-sample sites, and compare their screens and the page turn with the design's
 npm run test:behaviour            # build the site and the samples, press through what they do, check the code against the design, and prove the content checks stop a bad build
 npm run test:site-speed           # build the site and hold it to the speed budgets
+npm run test:pieces               # draw the step 7 pieces on the review site, into test-results/pieces/
 ```
 
 The site's own content folders hold no episodes, articles or projects yet, so its home page has empty card lists and folders. To compare a filled page with the design, `tests/fixtures/` holds the design's own sample titles, articles and projects as content files; the `fixture-sites` project builds a site from them into `test-results/fixture-sites/`, and the `fixtures` project compares its screens with the design's baselines. The live site never reads them.

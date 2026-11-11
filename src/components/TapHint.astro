@@ -1,0 +1,8 @@
+---
+// The tap hint (step 7, approved): under the player when a browser holds the
+// video back. A .row as the episode page's status row is drawn: a .hand note, then the way out as
+// a .mini link to the video on YouTube.
+interface Props { text: string; link: string; href: string }
+const { text, link, href } = Astro.props;
+---
+<div class="row"><span class="hand">{text}</span><a class="mini" href={href} target="_blank" rel="noopener">{link} &#8599;</a></div>

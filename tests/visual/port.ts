@@ -35,8 +35,21 @@ export function portedCss(edition: Edition): string {
     if (css.split(block).length !== 2) throw new Error(`${edition}: a block to remove is not there exactly once`);
     css = css.replace(block, '');
   }
+  for (const change of CSS_CHANGES.filter((c) => c.edition === edition)) {
+    if (css.split(change.from).length !== 2) throw new Error(`${edition}: "${change.from}" is not in the CSS exactly once`);
+    css = css.replace(change.from, change.to);
+  }
   return css + speedCss(edition);
 }
+
+// Rules given a second selector, each your decision. Pocket styles a text field only inside the
+// torn slip (.under input); its search box (step 7) is a .field form, as the desktop's slip form
+// is, and takes the same declarations. No value changes, and no page drawn before step 7 has a
+// .field, so every screenshot stays as it was.
+export const CSS_CHANGES: { edition: Edition; from: string; to: string; why: string }[] = [
+  { edition: 'pocket', from: '.under input{', to: '.under input,.field input{', why: 'your decision, step 7: pocket\'s search field drawn as its slip field' },
+  { edition: 'pocket', from: '.under input:focus-visible{', to: '.under input:focus-visible,.field input:focus-visible{', why: 'your decision, step 7: and focused as it' },
+];
 
 // Speed (CLAUDE.md, allowed change 4, step 5). The scroll effects write these values on every
 // frame of a scroll, each onto the one element that reads it: the leaf's tilt (--lx, --lz), the

@@ -1,0 +1,28 @@
+---
+// The sort control (step 7, approved): the full archive's order. Drawn as each
+// edition draws its filters: on the desktop, a .row-ctl of .mini buttons led by a .count label;
+// on the pocket, a .small label over a .filters row, as its board puts the queue count beside its
+// filters. The pressed button is the order shown.
+interface Props {
+  edition: 'desktop' | 'pocket';
+  id: string;
+  label: string;
+  options: { id: string; label: string }[];
+  current: string;
+}
+const { edition, id, label, options, current } = Astro.props;
+const labelId = `${id}-${edition}`;
+---
+{edition === 'desktop' ? (
+  <div class="row-ctl" role="group" aria-labelledby={labelId}>
+    <span class="count" id={labelId}>{label}</span>
+    {options.map((option) => <button class="mini" type="button" data-sort={option.id} aria-pressed={String(option.id === current)}>{option.label}</button>)}
+  </div>
+) : (
+  <Fragment>
+  <p class="small" id={labelId}>{label}</p>
+  <div class="filters" role="group" aria-labelledby={labelId}>
+    {options.map((option) => <button class="mini" type="button" data-sort={option.id} aria-pressed={String(option.id === current)}>{option.label}</button>)}
+  </div>
+  </Fragment>
+)}

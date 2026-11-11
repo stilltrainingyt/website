@@ -1,0 +1,25 @@
+---
+// The transcript block (step 7, approved): the whole transcript in the page,
+// folded away under a ghost .btn until opened. A <details>, so it opens without scripts and its
+// words are in the page for search engines; the .btn sets its own display, so no disclosure
+// triangle is drawn. Inside, a .stack spaces the passages as a leaf spaces its parts (a
+// <details> is not laid out as a flex box itself); its first, empty part puts the same space
+// between the opener and the first passage. Each passage is headed by a chapter button
+// from the episode page's .chaps, carrying its time for the player to jump to, then its words.
+import type { Passage } from './pieces';
+
+interface Props { open: string; passages: Passage[] }
+const { open, passages } = Astro.props;
+---
+<details>
+  <summary class="btn ghost"><span class="lbl">{open}</span><span class="arrow">&#8595;</span></summary>
+  <div class="stack">
+  <span aria-hidden="true"></span>
+  {passages.map((passage) => (
+    <Fragment>
+    <button class="chap" type="button" data-t={passage.at}><span class="ct">{passage.at}</span>{passage.title && <span class="cn">{passage.title}</span>}</button>
+    <p>{passage.text}</p>
+    </Fragment>
+  ))}
+  </div>
+</details>

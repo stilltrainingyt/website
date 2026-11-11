@@ -1,0 +1,38 @@
+---
+// The subscribe slip's four links (step 7, approved): what the torn slip shows
+// in place of the design's email form. The slip's underside as each edition draws it, its form
+// and status line swapped for its own .btn buttons: the first filled, the rest .ghost, in a
+// .btnrow on the desktop and stacked 12 px apart on the pocket, as pocket's form stacks its
+// parts. "Tape it back" stays.
+interface Props {
+  edition: 'desktop' | 'pocket';
+  eyebrow: string;
+  title: string;
+  text: string;
+  links: { label: string; href: string; external: boolean }[];
+  tapeBack: string;
+}
+const { edition, eyebrow, title, text, links, tapeBack } = Astro.props;
+const look = (i: number) => (i === 0 ? 'btn' : 'btn ghost');
+const away = (external: boolean) => (external ? { target: '_blank', rel: 'noopener' } : {});
+---
+{edition === 'desktop' ? (
+  <div class="under" id="under">
+    <p class="eyebrow">{eyebrow}</p>
+    <h3 style="color:var(--ink-inv)">{title}</h3>
+    <p style="color:var(--ink-inv); opacity:.86; font-size:16px">{text}</p>
+    <div class="btnrow">
+      {links.map((link, i) => <a class={look(i)} href={link.href} {...away(link.external)}><span class="lbl">{link.label}</span><span class="arrow">{link.external ? '↗' : '→'}</span></a>)}
+    </div>
+    <div><button class="mini" id="tapeBtn" type="button">{tapeBack}</button></div>
+  </div>
+) : (
+  <div class="under">
+    <p class="eyebrow">{eyebrow}</p>
+    <h3>{title}</h3>
+    <div class="stack" style="gap:12px">
+      {links.map((link, i) => <a class={look(i)} href={link.href} {...away(link.external)}><span>{link.label}</span><span class="arrow">{link.external ? '↗' : '→'}</span></a>)}
+    </div>
+    <div><button class="mini" id="tapeBtn" type="button">{tapeBack}</button></div>
+  </div>
+)}
