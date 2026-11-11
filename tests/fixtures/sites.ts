@@ -17,6 +17,9 @@ import type { Edition } from '../visual/materials';
 export const FIXTURE_SITES = {
   home: ['home'],
   'home-pocket': ['home', 'home-pocket'],
+  // The new pieces you approved in step 7, each on a review page under /pieces/ with
+  // sample videos, transcripts and articles laid over the home samples.
+  pieces: ['home', 'pieces'],
 } as const satisfies Record<string, readonly string[]>;
 export type FixtureSite = keyof typeof FIXTURE_SITES;
 

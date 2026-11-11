@@ -1,0 +1,66 @@
+---
+// Review page (step 7): the player's "Watch on YouTube" state, the tap hint and the transcript
+// block, in the design's episode page with the pinned sample video. The first leaf shows the
+// player as it is when the video cannot play; the second, the design's player box standing in
+// for YouTube's with the tap hint under it; the notes leaf carries the transcript.
+import { getEntry } from 'astro:content';
+import Journal from '/src/layouts/Journal.astro';
+import PlayerFallback from '/src/components/PlayerFallback.astro';
+import TapHint from '/src/components/TapHint.astro';
+import Transcript from '/src/components/Transcript.astro';
+import { passages } from '/src/components/pieces';
+import * as words from './words';
+
+const video = (await getEntry('videos', 'gradient-descent-by-hand'))!;
+const captions = (await getEntry('transcripts', 'gradient-descent-by-hand'))!;
+const youtube = words.watchOnYouTube(video.data.youtubeId);
+const editions = ['desktop', 'pocket'] as const;
+---
+<Journal page="episode">
+{editions.map((edition) => (
+  <Fragment>
+  <div class="stage" data-edition={edition}>
+  <section class="leaf " id="episode-player" data-leaf>
+  <div class="stack">
+    <div class="row"><a class="mini" href="/episodes/">&#8592; All episodes</a></div>
+    <p class="eyebrow">Foundations &middot; {video.data.duration}</p>
+    <h2 class="arttitle">{video.data.title}</h2>
+    <div class="stack" data-piece="fallback"><PlayerFallback caption={words.player.caption} button={words.player.button} href={youtube} /></div>
+  </div>
+  </section>
+  </div>
+  <div class="stage" data-edition={edition}>
+  <section class="leaf " id="episode-held" data-leaf>
+  <div class="stack">
+    <div class="stack" data-piece="taphint">
+      <div class="player" aria-label="Video player area">
+        <div class="play" aria-hidden="true">&#9654;</div>
+        <p class="pcap">The video plays here, on this page</p>
+      </div>
+      <TapHint text={words.player.tap} link={words.player.tapLink} href={youtube} />
+    </div>
+  </div>
+  </section>
+  </div>
+  <div class="stage" data-edition={edition}>
+  <section class="leaf ruledlight" id="episode-notes" data-leaf>
+  <div class="stack">
+    <p class="eyebrow">Notes</p>
+    <h2>What the episode covers</h2>
+    <p>A model learns by stepping downhill on a curve it cannot see. This episode does three of those steps with a pencil, checks them, then shows why the step size decides whether the walk settles, bounces, or leaves the page.</p>
+    <hr class="hr thin">
+    <div class="stack" data-piece="transcript">
+      <p class="eyebrow">{words.transcript.eyebrow}</p>
+      <Transcript open={words.transcript.open} passages={passages(captions.data.cues, video.data.chapters)} />
+    </div>
+    <hr class="hr thin">
+    <p class="eyebrow">Sources</p>
+    <ol class="srcs">
+      <li><b>Goodfellow, Bengio and Courville, 2016.</b> <i>Deep Learning</i>, section 4.3, &ldquo;Gradient-Based Optimization.&rdquo;</li>
+    </ol>
+  </div>
+  </section>
+  </div>
+  </Fragment>
+))}
+</Journal>

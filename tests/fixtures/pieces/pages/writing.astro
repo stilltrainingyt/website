@@ -1,0 +1,47 @@
+---
+// Review page (step 7): pinned, latest and hot, the sort control and the search box, in the
+// design's writing page, with the samples' articles. Each piece sits in a .stack marked
+// data-piece for the screenshots; inside the leaf's own .stack it spaces its parts as the leaf
+// would. The track filters and the full list are the design's, for context.
+import { getCollection } from 'astro:content';
+import Journal from '/src/layouts/Journal.astro';
+import Highlights from '/src/components/Highlights.astro';
+import SortControl from '/src/components/SortControl.astro';
+import SearchBox from '/src/components/SearchBox.astro';
+import { taxonomy } from '/src/components/content';
+import { articleCard, highlights } from '/src/components/pieces';
+import * as words from './words';
+
+const articles = await getCollection('articles');
+const card = (a: (typeof articles)[number]) => articleCard(a, words.minutesRead, words.readIt);
+const picked = highlights(articles);
+const sections = [
+  { label: words.highlights.pinned, cards: picked.pinned.map(card) },
+  { label: words.highlights.latest, cards: picked.latest.map(card) },
+  { label: words.highlights.hot, cards: picked.hot.map(card) },
+];
+const all = [...articles].sort((a, b) => b.data.published.getTime() - a.data.published.getTime()).map(card);
+const editions = ['desktop', 'pocket'] as const;
+---
+<Journal page="writing">
+{editions.map((edition) => (
+  <div class="stage" data-edition={edition}>
+  <section class="leaf " id="writing-index" data-leaf>
+  <div class="stack">
+    <p class="eyebrow">Writing</p>
+    <h2>Notes that outgrew a video</h2>
+    <p class="lede">Some ideas need more room than ten minutes of screen. They are written up here with the working shown. The shelves past AI are for history, the world, and plain thinking out loud.</p>
+    <div class="stack" data-piece="highlights"><Highlights sections={sections} /></div>
+    <p class="eyebrow">Everything</p>
+    <div class="cats" role="group" aria-label="Filter by track"><button class="mini" type="button" data-cat-filter="all" aria-pressed="true">All</button>{taxonomy.tracks.map((t) => <button class="mini" type="button" data-cat-filter={t.id} aria-pressed="false">{t.label}</button>)}</div>
+    <div class="stack" data-piece="sort"><SortControl edition={edition} id="sort-writing" {...words.sort} /></div>
+    <div class="stack" data-piece="search"><SearchBox edition={edition} {...words.search} /></div>
+    <div class="alist" id="alist">{all.map((c) => (
+      <a class="aitem" href={c.href}><div class="row">{c.chips.map((chip) => <span class={chip.look === 'plain' ? 'chip' : `chip ${chip.look}`}>{chip.text}</span>)}</div>
+      <h3>{c.title}</h3><p>{c.summary}</p><span class="go">{c.go} &#8594;</span></a>
+    ))}</div>
+  </div>
+  </section>
+  </div>
+))}
+</Journal>

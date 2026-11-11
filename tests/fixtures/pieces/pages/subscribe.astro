@@ -1,0 +1,69 @@
+---
+// Review page (step 7): the subscribe slip's four links, the slip shown torn as the design draws
+// it once torn, and the LinkedIn link among the "elsewhere" rows. The coupon and its two halves
+// are the design's, kept so the slip takes the space it takes when torn.
+import Journal from '/src/layouts/Journal.astro';
+import SlipLinks from '/src/components/SlipLinks.astro';
+import LinkRow from '/src/components/LinkRow.astro';
+import { site } from '/src/components/content';
+import * as words from './words';
+---
+<Journal page="subscribe">
+  <div class="stage" data-edition="desktop">
+  <section class="leaf gridded" id="tearoff" data-leaf>
+    <div class="stack" style="gap:28px">
+      <p class="eyebrow">Subscribe &middot; tear along the line</p>
+      <h2>Take the slip with you</h2>
+      <div class="stack" data-piece="slip">
+      <div class="tearbox torn" id="tearbox">
+        <SlipLinks edition="desktop" {...words.slip} />
+        <div class="tearlayer" id="tearlayer">
+          <div class="half up"><div class="coupon" aria-hidden="true"></div></div>
+          <div class="half dn"><div class="coupon" aria-hidden="true"></div></div>
+        </div>
+        <div class="coupon" id="coupon">
+          <div class="stack" style="gap:10px">
+            <p class="eyebrow">Still Training &middot; episode notes</p>
+            <h3>One slip per episode</h3>
+          </div>
+        </div>
+      </div>
+      </div>
+    </div>
+  </section>
+  </div>
+  <div class="stage" data-edition="pocket">
+  <section class="leaf gridded" id="slip" data-leaf>
+    <div class="stack">
+      <p class="eyebrow">Subscribe &middot; tear along the line</p>
+      <h2>Take the slip with you</h2>
+      <div class="stack" data-piece="slip">
+      <div class="tearbox torn" id="tearbox">
+        <SlipLinks edition="pocket" {...words.slip} />
+        <div class="tearlayer" id="tearlayer">
+          <div class="half up"><div class="coupon" aria-hidden="true"></div></div>
+          <div class="half dn"><div class="coupon" aria-hidden="true"></div></div>
+        </div>
+        <div class="coupon" id="coupon">
+          <p class="eyebrow">Still Training &middot; episode notes</p>
+          <h3>One slip per episode</h3>
+        </div>
+      </div>
+      </div>
+    </div>
+  </section>
+  </div>
+  {(['desktop', 'pocket'] as const).map((edition) => (
+    <div class="stage" data-edition={edition}>
+    <section class="leaf " id="sub-elsewhere" data-leaf>
+    <div class="stack">
+      <p class="eyebrow">Subscribe &middot; elsewhere</p>
+      <h2>Find the notebook elsewhere</h2>
+      <LinkRow label="YouTube" href={site.links.youtube} />
+      <LinkRow label="GitHub" href={site.links.github} />
+      <div class="stack" data-piece="linkedin"><LinkRow label={words.linkedIn.label} href={words.linkedIn.href} /></div>
+    </div>
+    </section>
+    </div>
+  ))}
+</Journal>

@@ -1,0 +1,37 @@
+WEBVTT
+
+00:00.000 --> 00:05.000
+A model starts out wrong. The only question is which way to move.
+
+00:05.000 --> 00:12.000
+It cannot see the whole curve, only the ground under its feet.
+
+02:10.000 --> 02:16.000
+Picture the error as a bowl. The bottom is the answer we want.
+
+02:16.000 --> 02:24.000
+Wherever the weight sits, the floor slopes one way or the other.
+
+04:30.000 --> 04:38.000
+The slope at a point is just how fast the error changes as the weight moves.
+
+04:38.000 --> 04:45.000
+For this bowl it is two times the distance from the bottom.
+
+07:40.000 --> 07:48.000
+Three steps on paper. Start at 4.5, step size 0.3.
+
+07:48.000 --> 07:56.000
+Each step takes away 0.6 of the distance, so it goes 4.5, 1.8, 0.72, 0.29.
+
+10:20.000 --> 10:28.000
+Too small a step and the walk takes forever. Too big and it overshoots.
+
+10:28.000 --> 10:36.000
+At step size one it lands on the other side, the same distance out, every time.
+
+12:30.000 --> 12:38.000
+Every step costs a pass over the training data to measure the slope.
+
+12:38.000 --> 12:45.000
+That is why real training takes so long, and why the step size matters so much.

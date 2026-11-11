@@ -14,7 +14,8 @@
     "test:speed": "playwright test --project=speed --workers=1",
     "test:site": "astro build && playwright test --project=site --project=fixtures",
     "test:behaviour": "astro build && playwright test --project=behaviour",
-    "test:site-speed": "astro build && playwright test --project=site-speed --workers=1"
+    "test:site-speed": "astro build && playwright test --project=site-speed --workers=1",
+    "test:pieces": "playwright test --project=pieces"
   },
   "dependencies": {
     "astro": "7.4.2"
