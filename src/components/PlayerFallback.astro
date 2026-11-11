@@ -1,0 +1,12 @@
+---
+// The player's "Watch on YouTube" state (step 7, approved): the design's dark
+// player box when the video cannot play here. Its .btn stands where the play button stood, and
+// its one line is the box's own caption (.pcap): an .eyebrow's colour is unreadable on the dark
+// box in either paper. The button opens the video on YouTube in a new tab.
+interface Props { caption: string; button: string; href: string }
+const { caption, button, href } = Astro.props;
+---
+<div class="player" aria-label="Video player area">
+  <a class="btn" href={href} target="_blank" rel="noopener"><span class="lbl">{button}</span><span class="arrow">&#8599;</span></a>
+  <p class="pcap">{caption}</p>
+</div>

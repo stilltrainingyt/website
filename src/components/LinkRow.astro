@@ -1,0 +1,9 @@
+---
+// A link row (step 7, approved, for the LinkedIn link): the subscribe page's
+// "elsewhere" row as the design draws its GitHub one, a name and the address it opens.
+import { shownAddress } from './pieces';
+
+interface Props { label: string; href: string }
+const { label, href } = Astro.props;
+---
+<a class="linkrow" href={href} target="_blank" rel="noopener"><span>{label}</span><span class="u">{shownAddress(href)} &#8599;</span></a>

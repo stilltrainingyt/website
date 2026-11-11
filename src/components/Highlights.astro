@@ -1,0 +1,22 @@
+---
+// Pinned, latest and hot (step 7, approved): an archive's first sections, each
+// a label and its cards. Each label is an eyebrow, as the episode page labels its sources; each
+// list is the writing page's .alist, and each item one of its published .aitem cards. A section
+// with nothing in it is left out. The same in both editions.
+import { chipClass } from './home';
+import type { Card } from './pieces';
+
+interface Props { sections: { label: string; cards: Card[] }[] }
+const sections = Astro.props.sections.filter((section) => section.cards.length > 0);
+---
+{sections.map((section) => (
+  <Fragment>
+  <p class="eyebrow">{section.label}</p>
+  <div class="alist">{section.cards.map((card) => (
+    <a class="aitem" href={card.href}>
+      <div class="row">{card.chips.map((chip) => <span class={chipClass(chip.look)}>{chip.text}</span>)}</div>
+      <h3>{card.title}</h3><p>{card.summary}</p>
+      <span class="go">{card.go} &#8594;</span></a>
+  ))}</div>
+  </Fragment>
+))}
