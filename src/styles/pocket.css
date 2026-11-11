@@ -1,6 +1,7 @@
 /* The pocket edition's stylesheet from design-reference/pocket.html, as written, applied
    below 900 px wide (src/layouts/Journal.astro). Its token blocks live in tokens.css, its
-   reduced-motion block is removed (CLAUDE.md, allowed change 1), and the values its scroll
+   reduced-motion block is removed (CLAUDE.md, allowed change 1), its slip field's two rules
+   also style the search field (.field input, your decision, step 7), and the values its scroll
    effects set on every frame and read only where set are declared non-inherited at the end
    (allowed change 4). tests/visual/port.spec.ts checks it against the design. */
 
@@ -200,8 +201,8 @@ input[type=range]::-moz-range-thumb{width:30px; height:30px; border-radius:0; ba
 .tearbox.torn .under{transform:scale(1)}
 .under .eyebrow,.under .said{color:var(--accent-hi)}
 .under .said{font-family:var(--mono); font-size:13px; min-height:1.4em}
-.under input{width:100%; min-height:56px; font-family:var(--mono); font-size:16px; padding:14px; background:var(--leaf); color:var(--ink); border:3px solid var(--ink)}
-.under input:focus-visible{outline:4px solid var(--accent-hi); outline-offset:3px}
+.under input,.field input{width:100%; min-height:56px; font-family:var(--mono); font-size:16px; padding:14px; background:var(--leaf); color:var(--ink); border:3px solid var(--ink)}
+.under input:focus-visible,.field input:focus-visible{outline:4px solid var(--accent-hi); outline-offset:3px}
 /* kit */
 .swatches{display:grid; grid-template-columns:repeat(5,1fr); border:3px solid var(--ink)}
 .sw{aspect-ratio:1/1; max-width:100%; display:flex; align-items:flex-end; padding:5px; font-family:var(--mono); font-size:9px}
