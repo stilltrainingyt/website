@@ -22,6 +22,7 @@ Every video, transcript, article, project and planned episode is a text file. Bl
 - `src/data/taxonomy.json`: the tracks, modes and topics, in the order the pages show them
 - `src/data/site.json`: the site's name, tagline and links
 - `src/data/home.yaml`: the home page's words (cover, premise, track cards, playground, cabinet), with a `desktop:` and a `pocket:` version where the two editions word a line differently
+- `src/data/episodes.yaml`: the episodes page's and every video page's words (stations, board, picks, archive, player, notes), in the same form
 
 The home page's track cards list each track's latest episodes, newest first, then its planned ones as plain text, four at most. Its cabinet shows the four newest articles and the first six projects by `order`; an article or project may carry `cabinet:` tags and a summary to show there instead of its own.
 
@@ -32,7 +33,7 @@ The file name is the page address and never changes after publishing. The build 
 Playwright compares every page with the two design files in `design-reference/`.
 
 ```bash
-npx playwright install chromium   # once per machine
+npx playwright install chromium firefox webkit   # once per machine
 npm run baselines                 # render the baselines from the design files (about 17 minutes)
 npm run baselines:shell           # only the shell's empty-page baselines
 npm run test:visual               # compare the design files against them
@@ -41,15 +42,16 @@ npm run test:selfcheck            # prove small changes are caught
 npm run test:speed                # the design files' timing at 1×, 4× and 6× CPU slowdown
 npm run test:site                 # build the site and the design-sample sites, and compare their screens and the page turn with the design's
 npm run test:behaviour            # build the site and the samples, press through what they do, check the code against the design, and prove the content checks stop a bad build
+npm run test:playback             # build the site and press through the episode page's player in Firefox and WebKit
 npm run test:site-speed           # build the site and hold it to the speed budgets
 npm run test:pieces               # draw the step 7 pieces on the review site, into test-results/pieces/
 ```
 
-The site's own content folders hold no episodes, articles or projects yet, so its home page has empty card lists and folders. To compare a filled page with the design, `tests/fixtures/` holds the design's own sample titles, articles and projects as content files; the `fixture-sites` project builds a site from them into `test-results/fixture-sites/`, and the `fixtures` project compares its screens with the design's baselines. The live site never reads them.
+The site's own content folders hold no episodes, articles or projects yet, so its home page has empty card lists and folders. To compare a filled page with the design, `tests/fixtures/` holds the design's own sample titles, articles and projects as content files; the `fixture-sites` project builds a site from them into `test-results/fixture-sites/`, and the `fixtures` project compares its screens with the design's baselines. The live site never reads them. Leaves the design does not draw (the episode page's notes, the episodes page's picks and archive) are compared with screens you approved, committed in `tests/visual/approved/`.
 
 Chrome on Windows sometimes draws a few screens slightly differently for a whole run, so run `npm run baselines` two or three times: each run adds the renderings it sees, and the collection starts over when `design-reference/` changes.
 
-Until step 13, `npm run test:site-speed` fails on two budgets, as decided in step 5: long tasks while scrolling the home page, and the desktop page turn. `ASSUMPTIONS.md` has the numbers, and step 13 settles them on Linux and on real phones.
+Until step 13, `npm run test:site-speed` fails on up to three budgets, as decided in steps 5 and 8: long tasks while scrolling the home page, the desktop page turn, and, in some runs, the pocket page turn. `ASSUMPTIONS.md` has the numbers, and step 13 settles them on Linux and on real phones.
 
 ## Contributions
 
