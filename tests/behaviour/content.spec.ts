@@ -117,6 +117,7 @@ const SAMPLE: Files = {
   'data/site.json': DATA('site.json'),
   'data/upcoming.yaml': UPCOMING,
   'data/home.yaml': DATA('home.yaml'),
+  'data/episodes.yaml': DATA('episodes.yaml'),
   'content/videos/gradient-descent-by-hand.md': VIDEO,
   'content/transcripts/gradient-descent-by-hand.vtt': VTT,
   'content/videos/reinforcement-learning-unit-1.md': COURSE_VIDEO,
@@ -273,6 +274,48 @@ test.describe('content files', () => {
     test('a file name that is not a page address', async ({}, testInfo) => {
       await stops(testInfo, changed({ 'content/projects/contextcore.md': null, 'content/projects/Context Core.md': PROJECT_FILE }),
         'Context Core.md: the file name is the page address');
+    });
+  });
+
+  // Step 8: the episodes pages' words, and a page for each published video.
+  test.describe('the episodes pages', () => {
+    const EPISODES = SAMPLE['data/episodes.yaml'];
+
+    test('their words file stops the build when a field, or a line\'s slate, is missing', async ({}, testInfo) => {
+      await stops(testInfo, changed({ 'data/episodes.yaml': edit(EPISODES, /^ {4}title: From slate to upload\n/m, '') }),
+        'episodes → episodes', /stations\.title\W+Required/);
+      await stops(testInfo, changed({ 'data/episodes.yaml': edit(EPISODES, '    eyebrow: "{slate} · {track} · {duration}"', '    eyebrow: "{track} · {duration}"') }),
+        'episodes → episodes', 'says {slate} where the slate number goes');
+      await stops(testInfo, changed({ 'data/episodes.yaml': `${EPISODES}home:\n  title: Elsewhere\n` }),
+        `${root(testInfo)}/data/episodes.yaml holds the episodes pages' words under one key, episodes:, and nothing else`);
+      await stops(testInfo, changed({ 'data/episodes.yaml': null }), `${root(testInfo)}/data/episodes.yaml`);
+    });
+
+    test('each published video has its own page, its whole transcript in the HTML, folded away', async ({}, testInfo) => {
+      const built = await build(testInfo, SAMPLE);
+      expect(built.ok, built.output.slice(-3000)).toBe(true);
+      const page = (address: string) => fs.readFileSync(testInfo.outputPath('dist', ...address.split('/').filter(Boolean), 'index.html'), 'utf8');
+      const video = page('/episodes/gradient-descent-by-hand/');
+      expect(video).toContain('<p class="eyebrow">ST‑002 · Foundations · 13:45</p>');
+      expect(video).toContain('What the episode covers, in my own words.');
+      expect(video).toContain('<a class="play" href="https://www.youtube.com/watch?v=AbC123xYz_0" target="_blank" rel="noopener"');
+      expect(video).toContain('src="https://i.ytimg.com/vi/AbC123xYz_0/hqdefault.jpg"');
+      // The transcript: every caption's words, in a <details> that starts closed.
+      expect(video).toMatch(/<details>\s*<summary class="btn ghost">/);
+      expect(video).toContain('A model learns by walking downhill. One step at a time.');
+      expect(video).toContain('<a href="https://example.org" target="_blank" rel="noopener">Cauchy, 1847. Méthode générale</a>');
+      expect(video).toContain('<a class="mini" href="/writing/gradient-descent-worked/" data-route="article">Gradient descent, worked out</a>');
+      // A video with no slate starts its eyebrow at its track.
+      expect(page('/episodes/reinforcement-learning-unit-1/')).toContain('<p class="eyebrow">Course · 42:00</p>');
+
+      // The archive lists published videos only; a planned episode is on the board alone.
+      const episodes = page('/episodes/');
+      const from = episodes.indexOf('id="ep-archive"'), archive = episodes.slice(from, episodes.indexOf('</section>', from));
+      expect(archive).toContain('Gradient descent, by hand');
+      expect(archive).toContain('Reinforcement learning, unit 1');
+      expect(archive).not.toContain('Backpropagation without the chain-rule fear');
+      expect(episodes.slice(0, episodes.indexOf('id="ep-picks"'))).toContain('Backpropagation without the chain-rule fear');
+      expect(fs.existsSync(testInfo.outputPath('dist', 'episodes', 'st-003'))).toBe(false);
     });
   });
 

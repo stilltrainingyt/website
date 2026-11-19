@@ -14,6 +14,7 @@
     "test:speed": "playwright test --project=speed --workers=1",
     "test:site": "astro build && playwright test --project=site --project=fixtures",
     "test:behaviour": "astro build && playwright test --project=behaviour",
+    "test:playback": "astro build && playwright test --project=playback-firefox --project=playback-webkit",
     "test:site-speed": "astro build && playwright test --project=site-speed --workers=1",
     "test:pieces": "playwright test --project=pieces"
   },

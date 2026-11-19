@@ -156,6 +156,16 @@ export const C_READERS: Record<Edition, string> = {
   pocket: '.washi',
 };
 const RUN = '  function run(){\n    queued=false;\n';
+
+// The episodes page's log (step 8): the line that opens each edition's section, and its last line.
+const LOG = { desktop: '  /* ---- the log: filter by track, stamp what you want to watch ---- */\n', pocket: '  /* log */\n' };
+const LOG_END = {
+  desktop: '      logRows.forEach(function(tr){tr.hidden=!(want==="all"||tr.getAttribute("data-track").indexOf(want)===0);});\n    });\n  });\n',
+  pocket: '    eps.forEach(function(el){el.hidden=!(want==="all"||el.getAttribute("data-track").indexOf(want)===0);});});});\n',
+};
+// The episode page's chapters (step 8): the section's last lines; and the router's click handler.
+const CHAPTERS_END = '      pbar.style.setProperty("--at",(secs(t)/secs("13:45")*100).toFixed(1)+"%");\n    });\n  });\n';
+const ROUTER_CLICK = '    e.preventDefault(); go(t.getAttribute("data-route"),t.getAttribute("data-then"));\n';
 const putC = (edition: Edition) => '  /* speed (allowed change 4): a leaf\'s --c goes onto the parts that read it */\n'
   + '  var readsC=new WeakMap();\n'
   + '  function putC(leaf,v){\n'
@@ -270,6 +280,29 @@ export const SCRIPT_CHANGES: Change[] = [
   { script: 'router', from: ROUTER_GO, to: addressBlock(), times: 1, why: 'every page has its own address (your decision, step 4): go fetches and places the next page, then turns to it' },
   { script: 'router', from: ROUTER_HASHCHANGE, to: '  window.addEventListener("popstate",function(){if(location.pathname!==shownAt)turn(location.pathname,null,false);});\n', times: 1, why: 'every page has its own address (your decision, step 4): Back and Forward replay the turn' },
   { script: 'router', from: ROUTER_START, to: '  show(Object.keys(pages)[0],start&&document.getElementById(start)?start:null);\n', times: 1, why: 'every page has its own address (your decision, step 4): a visitor arriving at any address sees that page directly' },
+  // Step 8: the episodes page's log and the episode page's chapters come back as the home page's
+  // sections did in step 5: each becomes a function that looks only inside one page, run for the
+  // whole file at load and again for each page a turn places, doing nothing in a page without
+  // its parts. The code inside each stays as written.
+  ...[
+    [LOG.desktop, `${LOG.desktop}${opens('logParts', 'logTable', FIND_ALL)}`],
+    [LOG_END.desktop, `${LOG_END.desktop}${closes('logParts')}`],
+  ].map(([from, to]): Change => ({ script: 'desktop', from, to, times: 1, why: 'the episodes page\'s log is found in each page that has it (step 8, as decided for pages in step 4)' })),
+  ...[
+    [LOG.pocket, `${LOG.pocket}${opens('logParts', 'eps', FIND_ALL)}`],
+    [LOG_END.pocket, `${LOG_END.pocket}${closes('logParts')}`],
+  ].map(([from, to]): Change => ({ script: 'pocket', from, to, times: 1, why: 'the episodes page\'s log is found in each page that has it (step 8, as decided for pages in step 4)' })),
+  ...[
+    ['  /* episode chapters */\n  var pbar=document.getElementById("pbar"), ptc=document.getElementById("ptc");\n',
+      '  /* episode chapters */\n  function chapterParts(scope){\n  var pbar=scope.querySelector("#pbar"), ptc=scope.querySelector("#ptc");\n'],
+    ['  Array.prototype.forEach.call(document.querySelectorAll(".chap"),function(c,i,all){\n',
+      '  Array.prototype.forEach.call(scope.querySelectorAll(".chap"),function(c,i,all){\n'],
+    [CHAPTERS_END, `${CHAPTERS_END}  }\n  chapterParts(document); window.addEventListener("st:placed",function(e){chapterParts(e.detail);});\n`],
+  ].map(([from, to]): Change => ({ script: 'router', from, to, times: 1, why: 'the episode page\'s chapters are found in each page that has them (step 8, as decided for pages in step 4)' })),
+  // Step 8 (your decision): a link to an item's own page (an episode or an article) carries its
+  // design page in data-route and its address in href, and turns to that address; every other
+  // link turns to its design page as before.
+  { script: 'router', from: ROUTER_CLICK, to: '    e.preventDefault(); var a=t.getAttribute("href");\n    if(a&&a.charAt(0)==="/")turn(a,t.getAttribute("data-then"),true); else go(t.getAttribute("data-route"),t.getAttribute("data-then"));\n', times: 1, why: 'items turn to their own addresses (your decision, step 8), so a video\'s page opens with the click that can start it' },
 ];
 
 export function changedScripts(script: Script): string {
@@ -291,12 +324,9 @@ export type Omission = { script: Script; needs: string } & ({ section: string } 
 export const OMITTED: Omission[] = [
   { script: 'desktop', needs: 'subscribe', section: '/* ---- the tear ---- */' },
   { script: 'desktop', needs: 'subscribe', section: '/* ---- the slip itself ---- */' },
-  { script: 'desktop', needs: 'episodes', section: '/* ---- the log: filter by track, stamp what you want to watch ---- */' },
   { script: 'desktop', needs: 'subscribe', section: '/* ---- tape the slip back on ---- */' },
   { script: 'pocket', needs: 'about', from: 'var stamp=$("stamp");', lines: 3 },
-  { script: 'pocket', needs: 'episodes', section: '/* log */' },
   { script: 'pocket', needs: 'subscribe', section: '/* the slip: pull down, or press, to tear */' },
-  { script: 'router', needs: 'episode', section: '/* episode chapters */' },
   { script: 'router', needs: 'writing', section: '/* writing shelves */' },
 ];
 

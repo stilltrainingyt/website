@@ -20,12 +20,22 @@ export const FIXTURE_SITES = {
   // The new pieces you approved in step 7, each on a review page under /pieces/ with
   // sample videos, transcripts and articles laid over the home samples.
   pieces: ['home', 'pieces'],
+  // The design's episodes page: its production board as planned episodes, nothing published
+  // yet (step 8). Its words are with the home samples, as every sample site builds the
+  // episodes pages. The pocket names one planned episode differently.
+  episodes: ['home', 'episodes'],
+  'episodes-pocket': ['home', 'episodes', 'episodes-pocket'],
+  // The design's episode page: the step 7 sample videos, one of them written as the design's
+  // episode page draws it (step 8). Its player leaf is compared with the design's, and its
+  // notes leaf with the screens you approved (tests/visual/leaves.spec.ts).
+  episode: ['home', 'pieces', 'episode'],
 } as const satisfies Record<string, readonly string[]>;
 export type FixtureSite = keyof typeof FIXTURE_SITES;
 
 // The sample site that draws each page, in each edition.
 export const FIXTURE_PAGES: Partial<Record<PageName, Record<Edition, FixtureSite>>> = {
   home: { desktop: 'home', pocket: 'home-pocket' },
+  episodes: { desktop: 'episodes', pocket: 'episodes-pocket' },
 };
 
 // Each site's folders laid together, and the site built from them, inside Playwright's output.

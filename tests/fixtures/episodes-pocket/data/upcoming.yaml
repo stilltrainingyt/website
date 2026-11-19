@@ -1,0 +1,42 @@
+# The design's production board on its pocket episodes page, as planned episodes: the
+# desktop's, with ST-010 named as the pocket names it.
+ST-001:
+  title: "What a model actually stores"
+  track: foundations
+  stage: cutting
+  runtime: "11:20"
+ST-002:
+  title: "Gradient descent, by hand"
+  track: foundations
+  stage: cutting
+  runtime: "13:45"
+ST-003:
+  title: "Backpropagation without the chain-rule fear"
+  track: foundations
+  stage: recording
+  runtime: "14:10"
+ST-004:
+  title: "Why tokenizers break arithmetic"
+  track: foundations
+  stage: scripted
+  runtime: "09:50"
+ST-010:
+  title: "Linear algebra you actually use, unit 1"
+  track: course
+  stage: planned
+  runtime: "42:00"
+ST-011:
+  title: "The training loop, end to end"
+  track: course
+  stage: planned
+  runtime: "38:30"
+ST-101:
+  title: "SliceGPT, reproduced on one laptop"
+  track: e3
+  stage: planned
+  runtime: "22:15"
+ST-102:
+  title: "Layer streaming for small GPUs"
+  track: e3
+  stage: planned
+  runtime: "19:00"

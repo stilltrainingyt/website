@@ -1,7 +1,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
-import type { Page } from '@playwright/test';
-import { test, expect, PAGES, VIEWS, PAPERS, urlFor, open, scrollStops, scrollTo, restless, renderings, matchesARendering, masks, stableShot } from '../targets';
+import type { Page, TestInfo } from '@playwright/test';
+import { test, expect, PAGES, VIEWS, PAPERS, SAMPLE_CHANGES, urlFor, sampleUrl, open, scrollStops, scrollTo, restless, renderings, matchesARendering, masks, stableShot, type PageName } from '../targets';
 import { FIXTURE_PAGES } from '../fixtures/sites';
 
 // Every page, at every width, in both papers, one screen at a time from top to
@@ -15,7 +15,10 @@ import { FIXTURE_PAGES } from '../fixtures/sites';
 // named in the report.
 //
 // The fixtures project draws each page from the design's samples written as content files
-// (tests/fixtures), built into a site; a page with no samples yet is skipped.
+// (tests/fixtures), built into a site; a page with no samples yet is skipped. Where a sample
+// cannot be content (SAMPLE_CHANGES in targets.ts), the sample site is compared with baselines
+// of the design page drawn with those changes, "<page>-samples", which the reference project
+// makes and checks as it does the page's own.
 
 const LOADS = 3;
 
@@ -47,48 +50,61 @@ for (const view of VIEWS) {
         colorScheme: paper,
       });
 
+      // One page's screens, made into baselines or compared with them under `stem`.
+      async function screens(page: Page, url: string, stem: string, testInfo: TestInfo): Promise<void> {
+        const name = (i: number) => `${view.name}/${paper}/${stem}/${String(i + 1).padStart(2, '0')}.png`;
+        const file = (i: number) => testInfo.snapshotPath(name(i), { kind: 'screenshot' });
+
+        if (testInfo.config.updateSnapshots === 'all') {
+          const loads: Buffer[][] = [];
+          for (let l = 0; l < LOADS; l++) loads.push(await capture(page, url));
+          expect(new Set(loads.map((l) => l.length)).size, 'Every load has the same number of screens').toBe(1);
+          for (let i = 0; i < loads[0].length; i++) {
+            const distinct: { shot: Buffer; seen: number }[] = [];
+            for (const load of loads) {
+              const known = distinct.find((d) => d.shot.equals(load[i]));
+              if (known) known.seen++;
+              else distinct.push({ shot: load[i], seen: 1 });
+            }
+            distinct.sort((a, b) => b.seen - a.seen);
+            // Add the renderings earlier baseline runs have not seen (baselines-setup.ts
+            // starts over when the design files change).
+            const primary = file(i);
+            fs.mkdirSync(path.dirname(primary), { recursive: true });
+            const known = renderings(primary).map((f) => fs.readFileSync(f));
+            for (const d of distinct) {
+              if (known.some((k) => k.equals(d.shot))) continue;
+              fs.writeFileSync(known.length === 0 ? primary : primary.replace(/\.png$/, `~${known.length + 1}.png`), d.shot);
+              known.push(d.shot);
+            }
+            if (known.length > 1) {
+              testInfo.annotations.push({ type: 'renderings', description: `${name(i)}: ${known.length} known, this run saw ${distinct.length} (${distinct.map((d) => d.seen).join('/')} of ${LOADS} loads)` });
+            }
+          }
+          return;
+        }
+
+        await capture(page, url, async (i, shot) => {
+          if (matchesARendering(file(i), shot)) return;
+          // No rendering matches: compare with the main one, which fails and saves the difference.
+          await expect.soft(page).toHaveScreenshot(name(i), { mask: masks(page) });
+        });
+      }
+
       for (const pageName of PAGES) {
         test(pageName, async ({ page, target }, testInfo) => {
-          test.skip(target === 'fixture' && !FIXTURE_PAGES[pageName], 'No design sample draws this page yet');
+          test.skip(target === 'fixture' && !FIXTURE_PAGES[pageName], 'No design sample draws this page whole (leaves.spec.ts compares those drawn in part)');
           if (target !== 'reference' && testInfo.config.updateSnapshots === 'all') throw new Error('Baselines are made from the design files only');
-          const url = urlFor(target, view, pageName);
-          const name = (i: number) => `${view.name}/${paper}/${pageName}/${String(i + 1).padStart(2, '0')}.png`;
-          const file = (i: number) => testInfo.snapshotPath(name(i), { kind: 'screenshot' });
+          const stem = target === 'fixture' && SAMPLE_CHANGES[pageName] ? `${pageName}-samples` : pageName;
+          await screens(page, urlFor(target, view, pageName), stem, testInfo);
+        });
+      }
 
-          if (testInfo.config.updateSnapshots === 'all') {
-            const loads: Buffer[][] = [];
-            for (let l = 0; l < LOADS; l++) loads.push(await capture(page, url));
-            expect(new Set(loads.map((l) => l.length)).size, 'Every load has the same number of screens').toBe(1);
-            for (let i = 0; i < loads[0].length; i++) {
-              const distinct: { shot: Buffer; seen: number }[] = [];
-              for (const load of loads) {
-                const known = distinct.find((d) => d.shot.equals(load[i]));
-                if (known) known.seen++;
-                else distinct.push({ shot: load[i], seen: 1 });
-              }
-              distinct.sort((a, b) => b.seen - a.seen);
-              // Add the renderings earlier baseline runs have not seen (baselines-setup.ts
-              // starts over when the design files change).
-              const primary = file(i);
-              fs.mkdirSync(path.dirname(primary), { recursive: true });
-              const known = renderings(primary).map((f) => fs.readFileSync(f));
-              for (const d of distinct) {
-                if (known.some((k) => k.equals(d.shot))) continue;
-                fs.writeFileSync(known.length === 0 ? primary : primary.replace(/\.png$/, `~${known.length + 1}.png`), d.shot);
-                known.push(d.shot);
-              }
-              if (known.length > 1) {
-                testInfo.annotations.push({ type: 'renderings', description: `${name(i)}: ${known.length} known, this run saw ${distinct.length} (${distinct.map((d) => d.seen).join('/')} of ${LOADS} loads)` });
-              }
-            }
-            return;
-          }
-
-          await capture(page, url, async (i, shot) => {
-            if (matchesARendering(file(i), shot)) return;
-            // No rendering matches: compare with the main one, which fails and saves the difference.
-            await expect.soft(page).toHaveScreenshot(name(i), { mask: masks(page) });
-          });
+      // The design pages as their samples are compared (SAMPLE_CHANGES), drawn from the design files.
+      for (const pageName of Object.keys(SAMPLE_CHANGES) as PageName[]) {
+        test(`${pageName} as sampled`, async ({ page, target }, testInfo) => {
+          test.skip(target !== 'reference', 'Drawn from the design files only');
+          await screens(page, sampleUrl(view, pageName), `${pageName}-samples`, testInfo);
         });
       }
     });

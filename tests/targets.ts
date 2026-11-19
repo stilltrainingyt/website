@@ -1,4 +1,4 @@
-import { test as base, type BrowserContext, type Page } from '@playwright/test';
+import { test as base, type BrowserContext, type Page, type PageScreenshotOptions } from '@playwright/test';
 import fs from 'node:fs';
 import path from 'node:path';
 import { pathToFileURL } from 'node:url';
@@ -43,9 +43,9 @@ export const ADDRESSES: Partial<Record<PageName, string>> = {
 };
 
 // The pages with an address of their own (step 3), and those still empty until their own step
-// brings their content.
+// brings their content (home in step 5, episodes in step 8).
 export const SHELL_PAGES: PageName[] = ['home', 'episodes', 'writing', 'projects', 'about', 'subscribe', 'missing'];
-export const EMPTY_PAGES: PageName[] = SHELL_PAGES.filter((name) => name !== 'home');
+export const EMPTY_PAGES: PageName[] = SHELL_PAGES.filter((name) => name !== 'home' && name !== 'episodes');
 
 export function urlFor(target: Target, view: View, pageName: PageName): string {
   if (target === 'reference') {
@@ -103,6 +103,49 @@ export async function serveFixtures(context: BrowserContext): Promise<void> {
   }
 }
 
+// Where a design sample cannot be written as content, its sample site is compared with the
+// design page drawn with these changes, made as the test serves the file (your decision, step
+// 8); design-reference/ itself is never changed. Their baselines sit beside the page's own,
+// under "<page>-samples". The design's board links ST-002's title to the page it gives an
+// episode still being cut; on the site an upcoming episode has no page, so its title is plain.
+export const SAMPLES_ORIGIN = 'http://samples.test';
+export const SAMPLE_CHANGES: Partial<Record<PageName, Record<Edition, { from: string; to: string }[]>>> = {
+  episodes: {
+    desktop: [{ from: '<td class="ttl"><a href="#episode" data-route="episode">Gradient descent, by hand</a></td>', to: '<td class="ttl">Gradient descent, by hand</td>' }],
+    pocket: [{ from: '<h3><a href="#episode" data-route="episode">Gradient descent, by hand</a></h3>', to: '<h3>Gradient descent, by hand</h3>' }],
+  },
+};
+
+export const sampleUrl = (view: View, pageName: PageName): string => `${SAMPLES_ORIGIN}/${pageName}/${view.file}#${pageName}`;
+
+export function sampleDesign(edition: Edition, pageName: PageName): string {
+  let html = designHtml(edition);
+  for (const change of SAMPLE_CHANGES[pageName]?.[edition] ?? []) {
+    if (html.split(change.from).length !== 2) throw new Error(`${edition}: "${change.from}" is not in the design exactly once`);
+    html = html.replace(change.from, change.to);
+  }
+  return html;
+}
+
+// Serves each design file as the sample changes for one page leave it, at
+// SAMPLES_ORIGIN/<page>/<file>. Everything else it loads comes from where the file's own does.
+export async function serveSamples(context: BrowserContext): Promise<void> {
+  await context.route(`${SAMPLES_ORIGIN}/**`, (route) => {
+    const m = /^\/([a-z]+)\/(desktop|pocket)\.html$/.exec(new URL(route.request().url()).pathname);
+    if (!m || !SAMPLE_CHANGES[m[1] as PageName]) return route.fulfill({ status: 404, contentType: 'text/plain', body: 'Not found' });
+    return route.fulfill({ contentType: 'text/html; charset=utf-8', body: sampleDesign(m[2] as Edition, m[1] as PageName) });
+  });
+}
+
+// No test reaches YouTube. Its thumbnails stand in as transparent images, so a cover draws as the
+// design's player box, and its player is cut off unless a test stands one in (registered later,
+// so it answers first).
+export const THUMBNAIL = '<svg xmlns="http://www.w3.org/2000/svg" width="480" height="360"/>';
+export async function standInYouTube(context: BrowserContext): Promise<void> {
+  await context.route('https://i.ytimg.com/**', (route) => route.fulfill({ contentType: 'image/svg+xml', body: THUMBNAIL }));
+  await context.route(/^https:\/\/(www\.)?youtube(-nocookie)?\.com\//, (route) => route.abort());
+}
+
 // A design page's contents as written: the inside of its <div class="page" data-page="…">.
 export function designPage(edition: Edition, name: PageName): string {
   const html = designHtml(edition);
@@ -148,10 +191,13 @@ export const test = base.extend<{ target: Target }>({
   // state cannot affect another page's screenshots.
   context: async ({ playwright, browserName, viewport, isMobile, hasTouch, colorScheme, target }, use) => {
     const browser = await playwright[browserName].launch();
-    const context = await browser.newContext({ viewport, isMobile, hasTouch, colorScheme });
+    // Firefox has no phone emulation; at 390 px it still draws the pocket edition, with touch.
+    const context = await browser.newContext({ viewport, isMobile: browserName === 'firefox' ? undefined : isMobile, hasTouch, colorScheme });
+    if (target === 'reference') await serveSamples(context);
     if (target === 'materials') await serveMaterials(context);
     if (target === 'site') await serveSite(context);
     if (target === 'fixture') await serveFixtures(context);
+    if (target === 'site' || target === 'fixture') await standInYouTube(context);
     await use(context);
     await browser.close();
   },
@@ -255,9 +301,10 @@ export function matchesARendering(baseline: string, shot: Buffer): boolean {
 
 export const masks = (page: Page) => [page.locator('[data-restless]')];
 
-// Like toHaveScreenshot: shoot until two shots in a row match.
-export async function stableShot(page: Page): Promise<Buffer> {
-  const shoot = () => page.screenshot({ animations: 'disabled', caret: 'hide', scale: 'css', mask: masks(page) });
+// Like toHaveScreenshot: shoot until two shots in a row match. A shot can be cut to part of the
+// window and drawn with a stylesheet of its own.
+export async function stableShot(page: Page, more: Pick<PageScreenshotOptions, 'clip' | 'style'> = {}): Promise<Buffer> {
+  const shoot = () => page.screenshot({ animations: 'disabled', caret: 'hide', scale: 'css', mask: masks(page), ...more });
   let last = await shoot();
   for (let i = 0; i < 10; i++) {
     const next = await shoot();

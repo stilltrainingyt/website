@@ -101,17 +101,18 @@ test.describe('as built', () => {
     for (const stem of ['tokens', 'desktop', 'pocket']) expect(builtFile(named(stem)!.href).equals(Buffer.from(src(`styles/${stem}.css`)))).toBe(true);
 
     const scripts = [...page.matchAll(/<script src="([^"]+)"><\/script>/g)].map((m) => m[1]);
-    expect(scripts.map((s) => path.posix.basename(s).split('.')[0])).toEqual(['desktop', 'pocket', 'router']);
+    expect(scripts.map((s) => path.posix.basename(s).split('.')[0])).toEqual(['desktop', 'pocket', 'router', 'archive', 'player']);
     for (const s of scripts) expect(builtFile(s).equals(Buffer.from(src(`scripts/${path.posix.basename(s).split('.')[0]}.js`)))).toBe(true);
 
-    // The two small files ride inside the page, unchanged.
-    for (const inline of ['styles/wrapper.css', 'styles/edition.css', 'scripts/edition.js']) expect(page).toContain(src(inline));
+    // The small files ride inside the page, unchanged.
+    for (const inline of ['styles/wrapper.css', 'styles/edition.css', 'styles/player.css', 'scripts/edition.js']) expect(page).toContain(src(inline));
   });
 
   test('every page links the same files', () => {
     const assets = (file: string) => [...fs.readFileSync(file, 'utf8').matchAll(/(?:href|src)="(\/_astro\/[^"]+)"/g)].map((m) => m[1]).join(' ');
     const pages = fs.readdirSync(SITE_DIR, { recursive: true, withFileTypes: true }).filter((e) => e.isFile() && e.name.endsWith('.html')).map((e) => path.join(e.parentPath, e.name));
-    expect(pages).toHaveLength(7);
+    // The seven pages of step 3, and one per published video.
+    expect(pages.length).toBe(7 + fs.readdirSync(path.join('src', 'content', 'videos')).filter((f) => f.endsWith('.md')).length);
     for (const p of pages) expect(assets(p), p).toBe(assets(path.join(SITE_DIR, 'index.html')));
   });
 });
