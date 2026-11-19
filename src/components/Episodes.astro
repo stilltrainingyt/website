@@ -1,0 +1,139 @@
+---
+// The episodes page in one edition: design-reference/'s episodes page as written (the stations
+// and the production board), with its words from src/data/episodes.yaml and its numbers and
+// rows from the content files (episodes.ts); then, once a video is published, two leaves of its
+// own (your decision, step 8): pinned, latest and hot, and the full archive with its filters
+// and sort, drawn as the design's writing shelf with the pieces approved in step 7. Each part is
+// marked data-edition, so edition.js keeps only the edition the width shows.
+//
+// The board's filters carry each track's label (allowed change 3) and its rows the planned
+// episodes, as plain text: an upcoming episode has no page. The design's log scripts add the
+// queue (desktop.js, pocket.js); src/scripts/archive.js filters and sorts the archive.
+import Highlights from './Highlights.astro';
+import SortControl from './SortControl.astro';
+import { chipClass } from './home';
+import { counting, unbroken, type EpisodesContent } from './episodes';
+import { taxonomy } from './content';
+
+interface Props { edition: 'desktop' | 'pocket'; episodes: EpisodesContent }
+const { edition, episodes } = Astro.props;
+const { copy, stations, published, board, picks, archive, open, shelves, topics, sorts } = episodes;
+const desktop = edition === 'desktop';
+const tracks = taxonomy.tracks;
+---
+{desktop ? (
+<Fragment>
+<div class="stage" data-edition="desktop">
+<section class="leaf gridded" id="ep-stations" data-leaf>
+<div class="stack">
+  <p class="eyebrow">{copy.stations.eyebrow}</p>
+  <h2>{copy.stations.title}</h2>
+  <p class="lede">{copy.stations.lede}</p>
+  <div class="stations">{stations.map((s) => <div class="station"><span class="big">{s.count}</span><div class="stack" style="gap:4px"><span class="lab">{s.label}</span><p>{s.text}</p></div></div>)}</div>
+  <p class="hand">{counting(copy.stations.uploaded, published)}</p>
+  <div class="row"><a class="btn" href="#log" data-route="episodes" data-then="log"><span class="lbl">{copy.stations.board}</span><span class="arrow">&#8595;</span></a><a class="btn ghost" href={open.href} data-route={open.route} data-then={open.then}><span class="lbl">{copy.stations.open}</span><span class="arrow">&#8594;</span></a></div>
+</div>
+</section>
+</div>
+  <div class="stage" data-edition="desktop">
+  <section class="leaf sunk" id="log" data-leaf>
+    <div class="stack">
+      <p class="eyebrow">{copy.board.eyebrow}</p>
+      <div class="colophon" style="align-items:flex-end">
+        <h2>{copy.board.title}</h2>
+        <p class="hand" style="max-width:300px">{copy.board.note.map((line, i) => (i === 0 ? line : <Fragment><br>{line}</Fragment>))}</p>
+      </div>
+      <div class="row-ctl">
+        <button class="mini" type="button" data-filter="all" aria-pressed="true">All</button>
+        {tracks.map((t) => <button class="mini" type="button" data-filter={t.label} aria-pressed="false">{t.label}</button>)}
+        <span class="count" id="qCount" role="status">Nothing queued yet</span>
+      </div>
+      <div class="logwrap">
+        <table id="logTable">
+          <caption class="skip">Planned episodes with slate number, track, runtime and production status</caption>
+          <thead>
+            <tr><th scope="col">Slate</th><th scope="col">Episode</th><th scope="col">Track</th><th scope="col">Runtime</th><th scope="col">Status</th></tr>
+          </thead>
+          <tbody>
+            {board.map((row) => <tr><td class="slate">{unbroken(row.slate)}</td><td class="ttl">{row.title}</td><td>{row.track}</td><td class="run">{row.runtime}</td><td><span class={`dot ${row.dot}`}><i></i>{row.status}</span></td></tr>)}
+          </tbody>
+        </table>
+      </div>
+      <p style="font-family:var(--mono); font-size:12.5px; color:var(--ink-3)">{copy.board.footnote.desktop}</p>
+    </div>
+  </section>
+  </div>
+</Fragment>
+) : (
+<Fragment>
+<section class="leaf gridded" id="ep-stations" data-leaf data-edition="pocket">
+<div class="stack">
+  <p class="eyebrow">{copy.stations.eyebrow}</p>
+  <h2>{copy.stations.title}</h2>
+  <p class="lede">{copy.stations.lede}</p>
+  <div class="stations">{stations.map((s) => <div class="station"><span class="big">{s.count}</span><div class="stack" style="gap:4px"><span class="lab">{s.label}</span><p>{s.text}</p></div></div>)}</div>
+  <p class="hand">{counting(copy.stations.uploaded, published)}</p>
+  <div class="row"><a class="btn" href="#log" data-route="episodes" data-then="log"><span class="lbl">{copy.stations.board}</span><span class="arrow">&#8595;</span></a><a class="btn ghost" href={open.href} data-route={open.route} data-then={open.then}><span class="lbl">{copy.stations.open}</span><span class="arrow">&#8594;</span></a></div>
+</div>
+</section>  <section class="leaf sunk" id="log" data-leaf data-edition="pocket">
+    <div class="stack">
+      <p class="eyebrow">{copy.board.eyebrow}</p>
+      <h2>{copy.board.title}</h2>
+      <p class="hand">{copy.board.note.join(' ')}</p>
+      <div class="filters" role="group" aria-label="Filter by track">
+        <button class="mini" type="button" data-filter="all" aria-pressed="true">All</button>
+        {tracks.map((t) => <button class="mini" type="button" data-filter={t.label} aria-pressed="false">{t.label}</button>)}
+      </div>
+      <p class="small" id="qCount" role="status">Nothing queued yet</p>
+      <div class="eps" id="eps">{board.map((row) => <article class="ep" data-slate={row.slate} data-track={row.track}><div class="top"><span class="slate">{row.slate}</span><span class="st">{row.status}</span></div><h3>{row.title}</h3><div class="row between"><span class="meta">{row.runtime ? <Fragment>{row.track} &middot; {row.runtime}</Fragment> : row.track}</span><span class="row"><span class="qslot"></span><button class="mini" type="button" aria-label={`Queue ${row.title}`}>Queue it</button></span></div></article>)}</div>
+      <p class="small">{copy.board.footnote.pocket}</p>
+    </div>
+  </section>
+</Fragment>
+)}
+{archive.length > 0 && (
+<Fragment>
+{desktop ? <div class="stage" data-edition="desktop"><section class="leaf" id="ep-picks" data-leaf><div class="stack">
+  <p class="eyebrow">{copy.picks.eyebrow}</p>
+  <h2>{copy.picks.title}</h2>
+  <Highlights sections={picks} />
+</div></section></div> : <section class="leaf" id="ep-picks" data-leaf data-edition="pocket"><div class="stack">
+  <p class="eyebrow">{copy.picks.eyebrow}</p>
+  <h2>{copy.picks.title}</h2>
+  <Highlights sections={picks} />
+</div></section>}
+{desktop ? <div class="stage" data-edition="desktop"><section class="leaf" id="ep-archive" data-leaf><div class="stack" data-archive>
+  <p class="eyebrow">{copy.archive.eyebrow}</p>
+  <h2>{copy.archive.title}</h2>
+  <div class="row-ctl" role="group" aria-label="Filter by track">
+    <button class="mini" type="button" data-shelf="all" aria-pressed="true">All</button>
+    {shelves.map((s) => <button class="mini" type="button" data-shelf={s.id} aria-pressed="false">{s.label}</button>)}
+  </div>
+  <div class="cats" role="group" aria-label="Filter by topic"><button class="mini" type="button" data-topic="all" aria-pressed="true">All</button>{topics.map((t) => <button class="mini" type="button" data-topic={t.id} aria-pressed="false">{t.label}</button>)}</div>
+  <SortControl edition="desktop" id="sort-episodes" label={copy.archive.sort.label} options={sorts} current="newest" />
+  <div class="alist">{archive.map((card) => (
+    <a class="aitem" href={card.href} data-route={card.route} data-shelf={card.shelf} data-topic={card.topic} data-topic-at={card.topicAt} data-published={card.published}>
+      <div class="row">{card.chips.map((chip) => <span class={chipClass(chip.look)}>{chip.text}</span>)}</div>
+      <h3>{card.title}</h3><p>{card.summary}</p>
+      <span class="go">{card.go} &#8594;</span></a>
+  ))}</div>
+  <p class="empty hand" data-empty hidden>{copy.archive.empty}</p>
+</div></section></div> : <section class="leaf" id="ep-archive" data-leaf data-edition="pocket"><div class="stack" data-archive>
+  <p class="eyebrow">{copy.archive.eyebrow}</p>
+  <h2>{copy.archive.title}</h2>
+  <div class="filters" role="group" aria-label="Filter by track">
+    <button class="mini" type="button" data-shelf="all" aria-pressed="true">All</button>
+    {shelves.map((s) => <button class="mini" type="button" data-shelf={s.id} aria-pressed="false">{s.label}</button>)}
+  </div>
+  <div class="cats" role="group" aria-label="Filter by topic"><button class="mini" type="button" data-topic="all" aria-pressed="true">All</button>{topics.map((t) => <button class="mini" type="button" data-topic={t.id} aria-pressed="false">{t.label}</button>)}</div>
+  <SortControl edition="pocket" id="sort-episodes" label={copy.archive.sort.label} options={sorts} current="newest" />
+  <div class="alist">{archive.map((card) => (
+    <a class="aitem" href={card.href} data-route={card.route} data-shelf={card.shelf} data-topic={card.topic} data-topic-at={card.topicAt} data-published={card.published}>
+      <div class="row">{card.chips.map((chip) => <span class={chipClass(chip.look)}>{chip.text}</span>)}</div>
+      <h3>{card.title}</h3><p>{card.summary}</p>
+      <span class="go">{card.go} &#8594;</span></a>
+  ))}</div>
+  <p class="empty hand" data-empty hidden>{copy.archive.empty}</p>
+</div></section>}
+</Fragment>
+)}

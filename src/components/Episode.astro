@@ -1,0 +1,72 @@
+---
+// A video's own page in one edition: design-reference/'s episode page as written, its words from
+// src/data/episodes.yaml (video:) and the rest from the video's file and transcript (episode.ts).
+// Each part is marked data-edition, so edition.js keeps only the edition the width shows.
+//
+// What step 8 adds to the design's template: the player box is a cover with the video's YouTube
+// thumbnail under the design's play button, which is an ordinary link to the video on YouTube
+// (src/scripts/player.js plays it in the box instead); the approved "Watch on YouTube" box
+// waits in a template for when it cannot play, and the approved tap hint under the player; the
+// chapters jump the player; the notes leaf carries the approved transcript block, the video's
+// sources and the articles it links. The status chip and the hand note under the title are
+// words from the data file and the video's summary.
+import Transcript from './Transcript.astro';
+import PlayerFallback from './PlayerFallback.astro';
+import TapHint from './TapHint.astro';
+import type { EpisodeContent } from './episode';
+
+interface Props { edition: 'desktop' | 'pocket'; episode: EpisodeContent }
+const { edition, episode } = Astro.props;
+const { copy, video, Content, eyebrow, notesEyebrow, youtube, thumbnail, passages, linked } = episode;
+const desktop = edition === 'desktop';
+const Wrap = desktop ? 'div' : Fragment;
+const wrap = desktop ? { class: 'stage', 'data-edition': 'desktop' } : {};
+const mark = desktop ? {} : { 'data-edition': 'pocket' };
+---
+<Wrap {...wrap}>
+<section class="leaf " id="episode-player" data-leaf {...mark}>
+<div class="stack">
+  <div class="row"><a class="mini" href="/episodes/" data-route="episodes">&#8592; {copy.back}</a></div>
+  <p class="eyebrow">{eyebrow}</p>
+  <h2 class="arttitle">{video.title}</h2>
+  <div class="row"><span class="chip">{copy.status}</span><span class="hand">{video.summary}</span></div>
+  <div class="player" id="player" aria-label="Video player area" data-player={video.youtubeId} data-title={video.title}>
+    <img class="thumb" src={thumbnail} alt="" width="480" height="360" fetchpriority="high">
+    <a class="play" href={youtube} target="_blank" rel="noopener" aria-label={`Play ${video.title}`}>&#9654;</a>
+    <p class="pcap">{copy.caption}</p>
+    <p class="ptc" id="ptc">00:00 / {video.duration}</p>
+    <span class="pbar" id="pbar"></span>
+  </div>
+  <template data-fallback><PlayerFallback caption={copy.fallback.caption} button={copy.fallback.button} href={youtube} /></template>
+  <div data-taphint hidden><TapHint text={copy.tap.text} link={copy.tap.link} href={youtube} /></div>
+  {video.chapters.length > 0 && <Fragment>
+  <p class="small">{copy.chapters}</p>
+  <div class="chaps" id="chaps" role="group" aria-label="Chapters">{video.chapters.map((chapter) => <button class="chap" type="button" data-t={chapter.at}><span class="ct">{chapter.at}</span><span class="cn">{chapter.title}</span></button>)}</div>
+  </Fragment>}
+</div>
+</section>
+</Wrap>
+<Wrap {...wrap}>
+<section class="leaf ruledlight" id="episode-notes" data-leaf {...mark}>
+<div class="stack">
+  <p class="eyebrow">{notesEyebrow}</p>
+  <h2>{copy.notes.title}</h2>
+  <Content />
+  {linked[0] && <div class="row"><a class="btn" href={linked[0].href} data-route="article"><span class="lbl">{copy.notes.written}</span><span class="arrow">&#8594;</span></a></div>}
+  <hr class="hr thin">
+  <div class="stack">
+    <p class="eyebrow">{copy.transcript.eyebrow}</p>
+    <Transcript open={copy.transcript.open} passages={passages} />
+  </div>
+  {video.sources.length > 0 && <Fragment>
+  <hr class="hr thin">
+  <p class="eyebrow">{copy.sources}</p>
+  <ol class="srcs">{video.sources.map((source) => <li class="ttl"><a href={source.url} target="_blank" rel="noopener">{source.text}</a></li>)}</ol>
+  </Fragment>}
+  {linked.length > 0 && <Fragment>
+  <p class="eyebrow">{copy.linked}</p>
+  <div class="row">{linked.map((article) => <a class="mini" href={article.href} data-route="article">{article.title}</a>)}</div>
+  </Fragment>}
+</div>
+</section>
+</Wrap>

@@ -205,6 +205,25 @@ if(!window.matchMedia("(min-width:900px)").matches){
   }
   handParts(document); window.addEventListener("st:placed",function(e){handParts(e.detail);});
 
+  /* log */
+  function logParts(scope){
+  var $=function(id){return scope.querySelector("#"+id);}, all=function(s,c){return Array.prototype.slice.call((c||scope).querySelectorAll(s));};
+  if(!$("eps"))return;
+  var eps=all(".ep"), qCount=$("qCount"), queue=load("st-queue",[]); if(!Array.isArray(queue))queue=[];
+  function qPaint(){var c=0; eps.forEach(function(el){var id=el.getAttribute("data-slate"), inq=queue.indexOf(id)>=0, slot=el.querySelector(".qslot"), b=el.querySelector("button"); if(inq)c++;
+      var had=!!slot.firstChild; if(inq&&!had){var s=document.createElement("span");s.className="qstamp";s.textContent="QUEUED";slot.appendChild(s);} if(!inq&&had)slot.textContent="";
+      b.textContent=inq?"Remove":"Queue it"; b.setAttribute("aria-pressed",inq?"true":"false");});
+    qCount.textContent=c===0?"Nothing queued yet":(c+(c===1?" episode":" episodes")+" in your queue");}
+  eps.forEach(function(el){var id=el.getAttribute("data-slate"); el.querySelector("button").addEventListener("click",function(){
+    var i=queue.indexOf(id); if(i>=0)queue.splice(i,1); else queue.push(id); save("st-queue",queue); qPaint();});});
+  qPaint();
+  var filters=all("[data-filter]");
+  filters.forEach(function(f){f.addEventListener("click",function(){var want=f.getAttribute("data-filter");
+    filters.forEach(function(o){o.setAttribute("aria-pressed",o===f?"true":"false");});
+    eps.forEach(function(el){el.hidden=!(want==="all"||el.getAttribute("data-track").indexOf(want)===0);});});});
+  }
+  logParts(document); window.addEventListener("st:placed",function(e){logParts(e.detail);});
+
   /* folders */
   function folderParts(scope){
   all(".folder",scope).forEach(function(f){var d=scope.querySelector("#"+f.getAttribute("aria-controls")), hint=f.querySelector(".f-hint");

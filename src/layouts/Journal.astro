@@ -4,9 +4,11 @@
 // below; edition.css hides the other edition's parts; each edition's script runs only at its
 // own widths, and edition.js loads the page again when the width crosses 900 px. The design's
 // page router, last as in the design, turns to the next page's address by fetching its file
-// and placing its page next to this one.
+// and placing its page next to this one. The site's own scripts follow it: the archives'
+// filters and order (archive.js) and the episode page's player (player.js, with player.css).
 import wrapperCss from '../styles/wrapper.css?raw';
 import editionCss from '../styles/edition.css?raw';
+import playerCss from '../styles/player.css?raw';
 import tokensCss from '../styles/tokens.css?url';
 import desktopCss from '../styles/desktop.css?url';
 import pocketCss from '../styles/pocket.css?url';
@@ -14,6 +16,8 @@ import editionJs from '../scripts/edition.js?raw';
 import desktopJs from '../scripts/desktop.js?url';
 import pocketJs from '../scripts/pocket.js?url';
 import routerJs from '../scripts/router.js?url';
+import archiveJs from '../scripts/archive.js?url';
+import playerJs from '../scripts/player.js?url';
 import Frame from '../components/Frame.astro';
 import Tabs from '../components/Tabs.astro';
 import Dock from '../components/Dock.astro';
@@ -48,6 +52,7 @@ const title = TITLES[page] ? `${TITLES[page]} · ${site.name}` : site.name;
 <link rel="stylesheet" href={desktopCss} media={DESKTOP_FROM}>
 <link rel="stylesheet" href={pocketCss} media={`not all and ${DESKTOP_FROM}`}>
 <style is:inline set:html={editionCss}></style>
+<style is:inline set:html={playerCss}></style>
 </head>
 <body>
 <a class="skip" href="#premise" data-edition="desktop">Skip to the first entry</a>
@@ -66,5 +71,7 @@ const title = TITLES[page] ? `${TITLES[page]} · ${site.name}` : site.name;
 <script is:inline src={desktopJs}></script>
 <script is:inline src={pocketJs}></script>
 <script is:inline src={routerJs}></script>
+<script is:inline src={archiveJs}></script>
+<script is:inline src={playerJs}></script>
 </body>
 </html>

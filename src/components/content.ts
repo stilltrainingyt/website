@@ -256,6 +256,47 @@ export const Home = z.strictObject({
   }),
 });
 
+// The episodes pages' words, src/data/episodes.yaml, all under its one key, episodes:: the
+// episodes page's four leaves (the stations, the production board, pinned, latest and hot, and
+// the full archive), then every video's own page. A value written once is the same in both
+// editions; one written as desktop: and pocket: differs between them. The numbers, titles and
+// labels come from the content files and taxonomy.json; the words on the design's controls
+// (All, Queue it, the table's column heads) stay in the pages' markup.
+const station = z.strictObject({ label: text, text });
+const withSlate = (what: string) => text.refine((value) => value.includes('{slate}'), `says {slate} where ${what} goes`);
+export const Episodes = z.strictObject({
+  stations: z.strictObject({
+    eyebrow: text,
+    title: text,
+    lede: text,
+    stages: z.strictObject({ ...Object.fromEntries(STAGES.map((s) => [s, station])) as Record<(typeof STAGES)[number], typeof station>, uploaded: station }),
+    uploaded: counted,
+    board: text,
+    open: text,
+  }),
+  board: z.strictObject({ eyebrow: text, title: text, note: lines, footnote: both(text) }),
+  picks: z.strictObject({ eyebrow: text, title: text, pinned: text, latest: text, hot: text, watch: text }),
+  archive: z.strictObject({
+    eyebrow: text,
+    title: text,
+    empty: text,
+    sort: z.strictObject({ label: text, az: text, topic: text, newest: text, oldest: text }),
+  }),
+  video: z.strictObject({
+    back: text,
+    eyebrow: withSlate('the slate number').refine((value) => value.includes('{track}') && value.includes('{duration}'), 'says {track} and {duration} where they go'),
+    status: text,
+    caption: text,
+    chapters: text,
+    fallback: z.strictObject({ caption: text, button: text }),
+    tap: z.strictObject({ text, link: text }),
+    notes: z.strictObject({ eyebrow: withSlate('the slate number'), title: text, written: text }),
+    transcript: z.strictObject({ eyebrow: text, open: text }),
+    sources: text,
+    linked: text,
+  }),
+});
+
 // A transcript, src/content/transcripts/<address>.vtt: the caption file YouTube Studio gives.
 const Cue = z.strictObject({ start: z.number().min(0), end: z.number().min(0), text: z.string() });
 export const Transcript = z.strictObject({ cues: z.array(Cue).min(1, 'a transcript holds at least one caption') });

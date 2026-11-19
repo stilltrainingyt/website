@@ -300,6 +300,50 @@ if(window.matchMedia("(min-width:900px)").matches){
   }
   handParts(document); window.addEventListener("st:placed",function(e){handParts(e.detail);});
 
+  /* ---- the log: filter by track, stamp what you want to watch ---- */
+  function logParts(scope){
+  var $=function(id){return scope.querySelector("#"+id);}, all=function(s,c){return Array.prototype.slice.call((c||scope).querySelectorAll(s));};
+  if(!$("logTable"))return;
+  var logT=$("logTable"), qCount=$("qCount"), queue=load("st-queue",[]);
+  if(!Array.isArray(queue))queue=[];
+  var head=logT.querySelector("thead tr"), th=document.createElement("th"); th.scope="col"; th.textContent="Your queue"; head.appendChild(th);
+  var logRows=all("tbody tr",logT);
+  function qPaint(){
+    var c=0;
+    logRows.forEach(function(tr){
+      var id=tr.getAttribute("data-slate"), inq=queue.indexOf(id)>=0, cell=tr.querySelector("td.q");
+      if(inq)c++;
+      var had=!!cell.querySelector(".qstamp");
+      if(inq&&!had){var s=document.createElement("span");s.className="qstamp";s.textContent="QUEUED";cell.insertBefore(s,cell.firstChild);}
+      if(!inq&&had)cell.removeChild(cell.querySelector(".qstamp"));
+      var b=cell.querySelector("button"); b.textContent=inq?"Remove":"Queue it"; b.setAttribute("aria-pressed",inq?"true":"false");
+    });
+    qCount.textContent=c===0?"Nothing queued yet":(c+(c===1?" episode":" episodes")+" in your queue");
+  }
+  logRows.forEach(function(tr){
+    var id=tr.querySelector("td.slate").textContent.replace(/‑/g,"-");
+    tr.setAttribute("data-slate",id); tr.setAttribute("data-track",tr.children[2].textContent.trim());
+    var td=document.createElement("td"); td.className="q";
+    var b=document.createElement("button"); b.type="button"; b.className="mini";
+    b.setAttribute("aria-label","Queue "+tr.querySelector("td.ttl").textContent);
+    b.addEventListener("click",function(){
+      var i=queue.indexOf(id); if(i>=0)queue.splice(i,1); else queue.push(id);
+      save("st-queue",queue); qPaint();
+    });
+    td.appendChild(b); tr.appendChild(td);
+  });
+  qPaint();
+  var filters=all("[data-filter]");
+  filters.forEach(function(f){
+    f.addEventListener("click",function(){
+      var want=f.getAttribute("data-filter");
+      filters.forEach(function(o){o.setAttribute("aria-pressed",o===f?"true":"false");});
+      logRows.forEach(function(tr){tr.hidden=!(want==="all"||tr.getAttribute("data-track").indexOf(want)===0);});
+    });
+  });
+  }
+  logParts(document); window.addEventListener("st:placed",function(e){logParts(e.detail);});
+
   /* ---- number keys jump between entries ---- */
   var ids=["cover","premise","tracks","byhand","log","files","tearoff","colophon"];
   document.addEventListener("keydown",function(e){
