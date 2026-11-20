@@ -111,8 +111,9 @@ test.describe('as built', () => {
   test('every page links the same files', () => {
     const assets = (file: string) => [...fs.readFileSync(file, 'utf8').matchAll(/(?:href|src)="(\/_astro\/[^"]+)"/g)].map((m) => m[1]).join(' ');
     const pages = fs.readdirSync(SITE_DIR, { recursive: true, withFileTypes: true }).filter((e) => e.isFile() && e.name.endsWith('.html')).map((e) => path.join(e.parentPath, e.name));
-    // The seven pages of step 3, and one per published video.
-    expect(pages.length).toBe(7 + fs.readdirSync(path.join('src', 'content', 'videos')).filter((f) => f.endsWith('.md')).length);
+    // The seven pages of step 3, and one per published video and article.
+    const published = (folder: string) => fs.readdirSync(path.join('src', 'content', folder)).filter((f) => f.endsWith('.md')).length;
+    expect(pages.length).toBe(7 + published('videos') + published('articles'));
     for (const p of pages) expect(assets(p), p).toBe(assets(path.join(SITE_DIR, 'index.html')));
   });
 });
