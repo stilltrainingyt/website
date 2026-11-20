@@ -6,8 +6,10 @@ import type { CollectionEntry } from 'astro:content';
 import { seconds, taxonomy } from './content';
 import type { Chip } from './home';
 
-// One item on an archive: its page, title, summary, chips and the words on its way in.
-export type Card = { href: string; title: string; summary: string; chips: Chip[]; go: string };
+// One item on an archive: its page, title, summary, chips and the words on its way in, and the
+// design page its own page is (episode or article), so the router turns to it (your decision,
+// step 8).
+export type Card = { href: string; title: string; summary: string; chips: Chip[]; go: string; route: 'episode' | 'article' };
 
 // The archives' first sections: everything pinned, then the newest of the rest, then everything
 // hot, each newest first and each item once. Pinned and hot are your own marks in the files, so
@@ -35,6 +37,7 @@ export const videoCard = (video: CollectionEntry<'videos'>, go: string): Card =>
   summary: video.data.summary,
   chips: [{ text: topicLabel(video.data.topic), look: 'solid' }, { text: video.data.duration, look: 'open' }],
   go,
+  route: 'episode',
 });
 
 // An article's card, as the design's writing list draws a published one: its topic, then its
@@ -48,6 +51,7 @@ export const articleCard = (article: CollectionEntry<'articles'>, minutesRead: s
     { text: minutesRead.replaceAll('{minutes}', String(readingMinutes(article.body ?? ''))), look: 'open' },
   ],
   go,
+  route: 'article',
 });
 
 // A time in the video as the design writes chapter times: 02:10, or 1:02:03 past the hour.
@@ -57,6 +61,15 @@ export function clock(at: number): string {
   const two = (n: number) => String(n).padStart(2, '0');
   return h > 0 ? `${h}:${two(m)}:${two(s)}` : `${two(m)}:${two(s)}`;
 }
+
+// A caption's words as a reader sees them: WebVTT's inline tags (voices, classes, word timings)
+// left out, its character references read, and its lines joined.
+const REFERENCES: Record<string, string> = { amp: '&', lt: '<', gt: '>', nbsp: ' ', lrm: '‎', rlm: '‏' };
+export const captionText = (text: string): string => text
+  .replace(/<[^>]*>/g, '')
+  .replace(/&(amp|lt|gt|nbsp|lrm|rlm);/g, (_, name: string) => REFERENCES[name])
+  .replace(/\s*\n\s*/g, ' ')
+  .trim();
 
 // The transcript in passages: one per chapter, headed by the chapter's time and title, or, for a
 // video without chapters, one a minute. A caption joins the passage in which it starts.
@@ -71,7 +84,8 @@ export function passages(cues: { start: number; text: string }[], chapters: { at
       title: start.title,
       text: cues
         .filter((cue) => cue.start >= (i === 0 ? -Infinity : start.from) && (i === starts.length - 1 || cue.start < starts[i + 1].from))
-        .map((cue) => cue.text.replace(/\s*\n\s*/g, ' '))
+        .map((cue) => captionText(cue.text))
+        .filter((words) => words !== '')
         .join(' '),
     }))
     .filter((passage) => passage.text !== '');

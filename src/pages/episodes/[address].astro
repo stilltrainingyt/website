@@ -1,0 +1,17 @@
+---
+// Each video's own address, /episodes/<address>/, named by its file in src/content/videos/:
+// both editions of the design's episode page (Episode.astro).
+import { getCollection } from 'astro:content';
+import Journal from '../../layouts/Journal.astro';
+import Episode from '../../components/Episode.astro';
+import { episodeContent } from '../../components/episode';
+
+export async function getStaticPaths() {
+  const videos = await getCollection('videos');
+  return videos.map((video) => ({ params: { address: video.id }, props: { video } }));
+}
+
+const { video } = Astro.props;
+const episode = await episodeContent(video);
+---
+<Journal page="episode"><Episode edition="desktop" episode={episode} /><Episode edition="pocket" episode={episode} /></Journal>

@@ -1,0 +1,86 @@
+# The episodes pages' words: the episodes page's four leaves, then every video's own page. A
+# value written once is the same in both editions; one written with desktop: and pocket: is
+# different in each. A list of lines is set with a line break between each line on the
+# desktop, and as one line on the pocket. The numbers, titles, track labels and topics come
+# from the content files and taxonomy.json.
+episodes:
+  # The first leaf: how many episodes stand at each station. {count} is the number published.
+  stations:
+    eyebrow: Episodes · how they get made
+    title: From slate to upload
+    lede: Every episode moves through the same five stations, in this order. The numbers are today’s board.
+    stages:
+      planned:
+        label: Planned
+        text: An idea with a slate number.
+      scripted:
+        label: Scripted
+        text: Words on paper, every number checked.
+      recording:
+        label: Recording
+        text: Voice and screen, one idea per take.
+      cutting:
+        label: Cutting
+        text: Trimmed to the idea, captions added.
+      uploaded:
+        label: Uploaded
+        text: On the channel, with its own page here.
+    uploaded: "Uploaded: {count}. Still training."   # drafted in step 8 for you to edit
+    board: See the board
+    open: Open an episode page          # the newest video; the board while none is published
+
+  # The production board: the planned episodes in src/data/upcoming.yaml.
+  board:
+    eyebrow: Episodes · the board
+    title: Production board
+    note:                                         # drafted in step 8 for you to edit
+      - This is the board, not a back catalogue.
+      - What’s out is further down.
+    footnote:
+      desktop: Runtimes are targets. Slate numbers are permanent once assigned. Your queue is kept in this browser only.
+      pocket: Runtimes are targets. Your queue is kept in this browser only.
+
+  # Pinned, latest and hot: shown once a video is published.
+  picks:
+    eyebrow: Episodes · start here
+    title: Where to begin
+    pinned: Pinned
+    latest: Latest
+    hot: Hot
+    watch: Watch it
+
+  # Every published video, with its filters and its order: shown once a video is published.
+  archive:
+    eyebrow: Episodes · the archive
+    title: Every episode so far
+    empty: Nothing filed on this shelf yet.
+    sort:
+      label: Sort by
+      az: A to Z
+      topic: Topic
+      newest: Newest
+      oldest: Oldest
+
+  # Each video's own page. {slate}, {track} and {duration} are the video's; a video with no
+  # slate number leaves out "{slate} · ".
+  video:
+    back: All episodes
+    eyebrow: "{slate} · {track} · {duration}"
+    status: Uploaded
+    caption: The video plays here, on this page
+    chapters: Each chapter jumps the player to its start.
+    fallback:
+      caption: Can't play it here
+      button: Watch on YouTube
+    tap:
+      text: Tap the video to start. Still stuck?
+      link: Watch on YouTube
+    notes:
+      eyebrow: "{slate} · notes"
+      title: What the episode covers
+      written: Read the written version
+    transcript:
+      eyebrow: Transcript
+      open: Read it all
+    sources: Sources
+    linked: Linked from this episode

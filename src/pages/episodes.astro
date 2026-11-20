@@ -1,5 +1,11 @@
 ---
-// The episodes page's address. Its page is empty until its own step brings its content.
+// The episodes page's address: both editions of the design's episodes page, its words from
+// src/data/episodes.yaml and its numbers and lists from the content files (episodes.ts).
+// edition.js keeps the one the width shows.
 import Journal from '../layouts/Journal.astro';
+import Episodes from '../components/Episodes.astro';
+import { episodesContent } from '../components/episodes';
+
+const episodes = await episodesContent();
 ---
-<Journal page="episodes" />
+<Journal page="episodes"><Episodes edition="desktop" episodes={episodes} /><Episodes edition="pocket" episodes={episodes} /></Journal>

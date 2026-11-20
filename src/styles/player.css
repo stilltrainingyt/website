@@ -1,0 +1,11 @@
+/* The episode page's player (the site's own code, step 8, with src/scripts/player.js). The
+   video's thumbnail, and YouTube's player once the cover is clicked, fill the design's player
+   box; its play button, a link to the video on YouTube here, is drawn as the design draws it.
+   Once the player is in, the design's grid, caption, timecode and progress bar give way to
+   YouTube's own controls, and the page lifts above the paper grain (the plan's YouTube rules).
+   Nothing else. */
+.player .thumb,.player iframe{position:absolute; inset:0; width:100%; height:100%; border:0}
+.player .thumb{object-fit:cover}
+.player a.play{text-decoration:none}
+.player[data-started]::before,.player[data-started]>:not(iframe){display:none}
+[data-video] .shell{z-index:58}

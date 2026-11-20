@@ -2,9 +2,10 @@
    both editions. Its page-showing code is as written; the parts that turned pages by #hash give
    way to the site's addresses (your decision, step 4): the block marked "every page has its own
    address" stands where the design's go function was, a popstate listener where its hashchange
-   listener was, and the start-up shows this file's own page. tests/visual/port.ts lists every
-   difference from the design, with allowed change 1 and the episode chapters and writing
-   shelves left out until their pages arrive. */
+   listener was, and the start-up shows this file's own page. A link to an item's own page turns
+   to its address (your decision, step 8), and the episode page's chapters are found in each page
+   that has them. tests/visual/port.ts lists every difference from the design, with allowed
+   change 1 and the writing shelves left out until their page arrives. */
 
 (function(){
   "use strict";
@@ -75,11 +76,25 @@
   window.stGo=function(r){go(r);};
   document.addEventListener("click",function(e){
     var t=e.target.closest("[data-route]"); if(!t)return;
-    e.preventDefault(); go(t.getAttribute("data-route"),t.getAttribute("data-then"));
+    e.preventDefault(); var a=t.getAttribute("href");
+    if(a&&a.charAt(0)==="/")turn(a,t.getAttribute("data-then"),true); else go(t.getAttribute("data-route"),t.getAttribute("data-then"));
   });
   window.addEventListener("popstate",function(){if(location.pathname!==shownAt)turn(location.pathname,null,false);});
   Object.keys(pages).forEach(function(k){pages[k].hidden=true;});
   var start=(location.hash||"").slice(1);
   show(Object.keys(pages)[0],start&&document.getElementById(start)?start:null);
 
+  /* episode chapters */
+  function chapterParts(scope){
+  var pbar=scope.querySelector("#pbar"), ptc=scope.querySelector("#ptc");
+  function secs(t){var p=t.split(":");return (+p[0])*60+(+p[1]);}
+  Array.prototype.forEach.call(scope.querySelectorAll(".chap"),function(c,i,all){
+    c.addEventListener("click",function(){
+      Array.prototype.forEach.call(all,function(o){o.classList.toggle("on",o===c);});
+      var t=c.getAttribute("data-t"); ptc.textContent=t+" / 13:45";
+      pbar.style.setProperty("--at",(secs(t)/secs("13:45")*100).toFixed(1)+"%");
+    });
+  });
+  }
+  chapterParts(document); window.addEventListener("st:placed",function(e){chapterParts(e.detail);});
 })();
