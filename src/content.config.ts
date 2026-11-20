@@ -5,7 +5,7 @@ import fs from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { defineCollection } from 'astro:content';
 import { file, glob, type Loader, type LoaderContext } from 'astro/loaders';
-import { ROOT, SLATE, Article, Episodes, Home, Project, Transcript, Upcoming, Video, addressOf, parseVtt } from './components/content';
+import { ROOT, SLATE, Article, Episodes, Home, Project, Transcript, Upcoming, Video, Writing, addressOf, parseVtt } from './components/content';
 
 // Astro's loaders log some faults and carry on without the file: one they cannot read or
 // parse, an entry with no id. While a loader loads, each fault it logs stops the build instead.
@@ -127,4 +127,5 @@ export const collections = {
   upcoming: defineCollection({ loader: upcoming, schema: Upcoming }),
   home: defineCollection({ loader: words('home', "the home page's words"), schema: Home }),
   episodes: defineCollection({ loader: words('episodes', "the episodes pages' words"), schema: Episodes }),
+  writing: defineCollection({ loader: words('writing', "the writing pages' words"), schema: Writing }),
 };

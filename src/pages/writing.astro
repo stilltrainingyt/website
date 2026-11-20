@@ -1,5 +1,11 @@
 ---
-// The writing page's address. Its page is empty until its own step brings its content.
+// The writing page's address: both editions of the design's writing page, its words from
+// src/data/writing.yaml and its shelf from the content files (writing.ts). edition.js keeps the
+// one the width shows.
 import Journal from '../layouts/Journal.astro';
+import Writing from '../components/Writing.astro';
+import { writingContent } from '../components/writing';
+
+const writing = await writingContent();
 ---
-<Journal page="writing" />
+<Journal page="writing"><Writing edition="desktop" writing={writing} /><Writing edition="pocket" writing={writing} /></Journal>

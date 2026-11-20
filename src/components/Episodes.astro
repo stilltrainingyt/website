@@ -111,7 +111,7 @@ const tracks = taxonomy.tracks;
   </div>
   <div class="cats" role="group" aria-label="Filter by topic"><button class="mini" type="button" data-topic="all" aria-pressed="true">All</button>{topics.map((t) => <button class="mini" type="button" data-topic={t.id} aria-pressed="false">{t.label}</button>)}</div>
   <SortControl edition="desktop" id="sort-episodes" label={copy.archive.sort.label} options={sorts} current="newest" />
-  <div class="alist">{archive.map((card) => (
+  <div class="alist" data-items>{archive.map((card) => (
     <a class="aitem" href={card.href} data-route={card.route} data-shelf={card.shelf} data-topic={card.topic} data-topic-at={card.topicAt} data-published={card.published}>
       <div class="row">{card.chips.map((chip) => <span class={chipClass(chip.look)}>{chip.text}</span>)}</div>
       <h3>{card.title}</h3><p>{card.summary}</p>
@@ -127,7 +127,7 @@ const tracks = taxonomy.tracks;
   </div>
   <div class="cats" role="group" aria-label="Filter by topic"><button class="mini" type="button" data-topic="all" aria-pressed="true">All</button>{topics.map((t) => <button class="mini" type="button" data-topic={t.id} aria-pressed="false">{t.label}</button>)}</div>
   <SortControl edition="pocket" id="sort-episodes" label={copy.archive.sort.label} options={sorts} current="newest" />
-  <div class="alist">{archive.map((card) => (
+  <div class="alist" data-items>{archive.map((card) => (
     <a class="aitem" href={card.href} data-route={card.route} data-shelf={card.shelf} data-topic={card.topic} data-topic-at={card.topicAt} data-published={card.published}>
       <div class="row">{card.chips.map((chip) => <span class={chipClass(chip.look)}>{chip.text}</span>)}</div>
       <h3>{card.title}</h3><p>{card.summary}</p>

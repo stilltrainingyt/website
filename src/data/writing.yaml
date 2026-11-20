@@ -1,0 +1,39 @@
+# The writing pages' words: the writing page, then every article's own page. The numbers,
+# titles, track labels and topics come from the content files and taxonomy.json.
+writing:
+  # The writing page: the design's shelf of articles.
+  index:
+    eyebrow: Writing
+    title: Notes that outgrew a video
+    lede: Some ideas need more room than ten minutes of screen. They are written up here with the working shown. The shelves past AI are for history, the world, and plain thinking out loud.
+    empty: Nothing filed on this shelf yet.
+    note: Articles live in a public repository. Anyone can suggest a fix.
+    # Pinned, latest and hot, then the label over every article: shown once an article is
+    # published.
+    pinned: Pinned
+    latest: Latest
+    hot: Hot
+    everything: Everything
+    read: Read it
+    minutes: "{minutes} min read"
+    sort:
+      label: Sort by
+      az: A to Z
+      topic: Topic
+      newest: Newest
+      oldest: Oldest
+
+  # Each article's own page. {topic}, {track} and {minutes} are the article's; {date} is the
+  # day it was published, or last updated.
+  article:
+    back: All writing
+    eyebrow: "{topic} · {track} · {minutes} min read"
+    published: "Published {date}"
+    updated: "updated {date}"
+    watch: Watch the episode
+    # The licence line, in place of the design's "Suggest an edit on GitHub". {year} is the
+    # year the article was published; {author} is the author in site.json.
+    licence:
+      line: "© {year} {author} · CC BY 4.0 · Credit: {author}, Still Training, with a link to this page."
+      label: Licence
+      url: https://creativecommons.org/licenses/by/4.0/

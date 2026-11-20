@@ -297,6 +297,35 @@ export const Episodes = z.strictObject({
   }),
 });
 
+// The writing pages' words, src/data/writing.yaml, all under its one key, writing:: the writing
+// page's shelf, then every article's own page. The topics, tracks and reading times come from
+// the content files and taxonomy.json.
+const says = (...names: string[]) => text.refine((value) => names.every((name) => value.includes(`{${name}}`)), `says ${names.map((name) => `{${name}}`).join(' and ')} where they go`);
+export const Writing = z.strictObject({
+  index: z.strictObject({
+    eyebrow: text,
+    title: text,
+    lede: text,
+    empty: text,
+    note: text,
+    pinned: text,
+    latest: text,
+    hot: text,
+    everything: text,
+    read: text,
+    minutes: says('minutes'),
+    sort: z.strictObject({ label: text, az: text, topic: text, newest: text, oldest: text }),
+  }),
+  article: z.strictObject({
+    back: text,
+    eyebrow: says('topic', 'track', 'minutes'),
+    published: says('date'),
+    updated: says('date'),
+    watch: text,
+    licence: z.strictObject({ line: says('year'), label: text, url: z.url({ protocol: /^https$/ }) }),
+  }),
+});
+
 // A transcript, src/content/transcripts/<address>.vtt: the caption file YouTube Studio gives.
 const Cue = z.strictObject({ start: z.number().min(0), end: z.number().min(0), text: z.string() });
 export const Transcript = z.strictObject({ cues: z.array(Cue).min(1, 'a transcript holds at least one caption') });

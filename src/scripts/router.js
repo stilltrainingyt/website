@@ -3,9 +3,9 @@
    way to the site's addresses (your decision, step 4): the block marked "every page has its own
    address" stands where the design's go function was, a popstate listener where its hashchange
    listener was, and the start-up shows this file's own page. A link to an item's own page turns
-   to its address (your decision, step 8), and the episode page's chapters are found in each page
-   that has them. tests/visual/port.ts lists every difference from the design, with allowed
-   change 1 and the writing shelves left out until their page arrives. */
+   to its address (your decision, step 8), and the episode page's chapters (step 8) and the
+   writing page's shelves (step 9) are found in each page that has them. tests/visual/port.ts
+   lists every difference from the design, with allowed change 1. */
 
 (function(){
   "use strict";
@@ -97,4 +97,16 @@
   });
   }
   chapterParts(document); window.addEventListener("st:placed",function(e){chapterParts(e.detail);});
+  /* writing shelves */
+  function shelfParts(scope){
+  var items=Array.prototype.slice.call(scope.querySelectorAll("#alist .aitem")), empty=scope.querySelector("#aempty");
+  var cf=Array.prototype.slice.call(scope.querySelectorAll("[data-cat-filter]"));
+  cf.forEach(function(b){b.addEventListener("click",function(){
+    var k=b.getAttribute("data-cat-filter"), n=0;
+    cf.forEach(function(o){o.setAttribute("aria-pressed",o===b?"true":"false");});
+    items.forEach(function(it){var on=k==="all"||it.getAttribute("data-cat")===k; it.hidden=!on; if(on)n++;});
+    empty.hidden=n>0;
+  });});
+  }
+  shelfParts(document); window.addEventListener("st:placed",function(e){shelfParts(e.detail);});
 })();
