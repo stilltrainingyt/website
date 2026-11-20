@@ -299,6 +299,13 @@ export const SCRIPT_CHANGES: Change[] = [
       '  Array.prototype.forEach.call(scope.querySelectorAll(".chap"),function(c,i,all){\n'],
     [CHAPTERS_END, `${CHAPTERS_END}  }\n  chapterParts(document); window.addEventListener("st:placed",function(e){chapterParts(e.detail);});\n`],
   ].map(([from, to]): Change => ({ script: 'router', from, to, times: 1, why: 'the episode page\'s chapters are found in each page that has them (step 8, as decided for pages in step 4)' })),
+  // Step 9: the writing page's shelves, found in each page that has them, as the chapters are.
+  ...[
+    ['  /* writing shelves */\n  var items=Array.prototype.slice.call(document.querySelectorAll("#alist .aitem")), empty=document.getElementById("aempty");\n  var cf=Array.prototype.slice.call(document.querySelectorAll("[data-cat-filter]"));\n',
+      '  /* writing shelves */\n  function shelfParts(scope){\n  var items=Array.prototype.slice.call(scope.querySelectorAll("#alist .aitem")), empty=scope.querySelector("#aempty");\n  var cf=Array.prototype.slice.call(scope.querySelectorAll("[data-cat-filter]"));\n'],
+    ['    empty.hidden=n>0;\n  });});\n',
+      '    empty.hidden=n>0;\n  });});\n  }\n  shelfParts(document); window.addEventListener("st:placed",function(e){shelfParts(e.detail);});\n'],
+  ].map(([from, to]): Change => ({ script: 'router', from, to, times: 1, why: 'the writing page\'s shelves are found in each page that has them (step 9, as decided for pages in step 4)' })),
   // Step 8 (your decision): a link to an item's own page (an episode or an article) carries its
   // design page in data-route and its address in href, and turns to that address; every other
   // link turns to its design page as before.
@@ -327,7 +334,6 @@ export const OMITTED: Omission[] = [
   { script: 'desktop', needs: 'subscribe', section: '/* ---- tape the slip back on ---- */' },
   { script: 'pocket', needs: 'about', from: 'var stamp=$("stamp");', lines: 3 },
   { script: 'pocket', needs: 'subscribe', section: '/* the slip: pull down, or press, to tear */' },
-  { script: 'router', needs: 'writing', section: '/* writing shelves */' },
 ];
 
 const TITLE = /^ {2}\/\*.*\*\/$/;

@@ -58,7 +58,8 @@
         encodeURIComponent(location.origin)+(at>0?"&start="+at:"");
       f.addEventListener("load",function(){
         if(ready||me.frame!==f)return;
-        var knock=function(){post({event:"listening",id:1,channel:"widget"});};
+        // A page turned out before the player answered takes the player with it: stop knocking.
+        var knock=function(){if(!f.isConnected){quiet();return;} post({event:"listening",id:1,channel:"widget"});};
         knock(); clearInterval(knocking); knocking=setInterval(knock,KNOCK);
       });
       me.frame=f; box.appendChild(f); box.setAttribute("data-started",""); root.setAttribute("data-video","");

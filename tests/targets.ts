@@ -43,9 +43,9 @@ export const ADDRESSES: Partial<Record<PageName, string>> = {
 };
 
 // The pages with an address of their own (step 3), and those still empty until their own step
-// brings their content (home in step 5, episodes in step 8).
+// brings their content (home in step 5, episodes in step 8, writing in step 9).
 export const SHELL_PAGES: PageName[] = ['home', 'episodes', 'writing', 'projects', 'about', 'subscribe', 'missing'];
-export const EMPTY_PAGES: PageName[] = SHELL_PAGES.filter((name) => name !== 'home' && name !== 'episodes');
+export const EMPTY_PAGES: PageName[] = SHELL_PAGES.filter((name) => name !== 'home' && name !== 'episodes' && name !== 'writing');
 
 export function urlFor(target: Target, view: View, pageName: PageName): string {
   if (target === 'reference') {
@@ -114,6 +114,19 @@ export const SAMPLE_CHANGES: Partial<Record<PageName, Record<Edition, { from: st
     desktop: [{ from: '<td class="ttl"><a href="#episode" data-route="episode">Gradient descent, by hand</a></td>', to: '<td class="ttl">Gradient descent, by hand</td>' }],
     pocket: [{ from: '<h3><a href="#episode" data-route="episode">Gradient descent, by hand</a></h3>', to: '<h3>Gradient descent, by hand</h3>' }],
   },
+  // Step 9's article page: its reading time worked out from the text (the sample's is 559
+  // words, 2 minutes at 230 a minute); the date chip and hand note in place of the template's
+  // "Sample article" row; no "Try it on the curve", the design sample's own link; and the
+  // approved licence line in place of "Suggest an edit on GitHub" and its line.
+  article: Object.fromEntries((['desktop', 'pocket'] as const).map((edition) => [edition, [
+    { from: '<p class="eyebrow">AI &middot; Foundations &middot; 6 min read</p>\n  <h2 class="arttitle">', to: '<p class="eyebrow">AI &middot; Foundations &middot; 2 min read</p>\n  <h2 class="arttitle">' },
+    { from: '<span class="chip open">Sample article</span><span class="hand">written for this template</span>', to: '<span class="chip open">Published 27 October 2026</span><span class="hand">updated 2 November 2026</span>' },
+    { from: '<a class="btn" href="#home" data-route="home" data-then="byhand"><span class="lbl">Try it on the curve</span><span class="arrow">&#8594;</span></a>', to: '' },
+    {
+      from: '<p class="small" style="flex:1 1 220px; min-width:0">This article lives in a public repository. Found a mistake? Suggest a fix.</p>\n    <a class="mini" href="https://github.com/06pratyush" target="_blank" rel="noopener">Suggest an edit on GitHub</a>',
+      to: '<p class="small" style="flex:1 1 220px; min-width:0">© 2026 Pratyush P · CC BY 4.0 · Credit: Pratyush P, Still Training, with a link to this page.</p>\n  <a class="mini" href="https://creativecommons.org/licenses/by/4.0/" target="_blank" rel="license noopener">Licence &#8599;</a>',
+    },
+  ]])) as Record<Edition, { from: string; to: string }[]>,
 };
 
 export const sampleUrl = (view: View, pageName: PageName): string => `${SAMPLES_ORIGIN}/${pageName}/${view.file}#${pageName}`;
@@ -149,26 +162,33 @@ export async function standInYouTube(context: BrowserContext): Promise<void> {
 // A design page's contents as written: the inside of its <div class="page" data-page="…">.
 export function designPage(edition: Edition, name: PageName): string {
   const html = designHtml(edition);
+  const inside = pageInside(html, name);
+  if (!inside) throw new Error(`${edition}: no ${name} page, or it never closes`);
+  return html.slice(...inside);
+}
+
+// Where a <div class="page" data-page="…"> (the named one, or the first) starts and ends inside.
+function pageInside(html: string, name = '[a-z]+'): [number, number] | undefined {
   const open = new RegExp(`<div class="page" data-page="${name}"[^>]*>`).exec(html);
-  if (!open) throw new Error(`${edition}: no ${name} page`);
+  if (!open) return undefined;
   const tags = /<div\b|<\/div>/g;
   tags.lastIndex = open.index + open[0].length;
   for (let depth = 1, m; (m = tags.exec(html));) {
     depth += m[0] === '</div>' ? -1 : 1;
-    if (depth === 0) return html.slice(open.index + open[0].length, m.index);
+    if (depth === 0) return [open.index + open[0].length, m.index];
   }
-  throw new Error(`${edition}: the ${name} page never closes`);
+  return undefined;
 }
 
-// Until each page's content arrives, a test can stand the design's own contents in for a
-// site page: the built file at `address`, its empty page filled with `contents`. Registered
-// after serveSite, so it answers first.
+// A test can stand the design's own contents in for a site page, so that it compares like with
+// like: the built file at `address`, its page's contents (none, until that page's step) replaced
+// with `contents`. Registered after serveSite, so it answers first.
 export async function standIn(context: BrowserContext, address: string, contents: string): Promise<void> {
   const file = path.join(SITE_DIR, address, address.endsWith('/') ? 'index.html' : '');
   const built = fs.readFileSync(file, 'utf8');
-  const empty = /(<div class="page" data-page="[a-z]+">)(<\/div>)/;
-  if (!empty.test(built)) throw new Error(`${address}: no empty page to fill`);
-  const body = built.replace(empty, (_, open, close) => `${open}${contents}${close}`);
+  const inside = pageInside(built);
+  if (!inside) throw new Error(`${address}: no page to fill`);
+  const body = `${built.slice(0, inside[0])}${contents}${built.slice(inside[1])}`;
   await context.route(`${SITE_ORIGIN}${address}`, (route) => route.fulfill({ contentType: 'text/html; charset=utf-8', body }));
 }
 

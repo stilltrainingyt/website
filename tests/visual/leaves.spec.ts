@@ -1,7 +1,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import type { Page, TestInfo } from '@playwright/test';
-import { test, expect, VIEWS, PAPERS, urlFor, fixtureOrigin, open, scrollTo, restless, renderings, matchesARendering, stableShot, type PageName, type View } from '../targets';
+import { test, expect, VIEWS, PAPERS, SAMPLE_CHANGES, urlFor, sampleUrl, fixtureOrigin, open, scrollTo, restless, renderings, matchesARendering, stableShot, type PageName, type View } from '../targets';
 import type { FixtureSite } from '../fixtures/sites';
 
 // Pages a sample site draws only in part (step 8), compared leaf by leaf: each leaf from the
@@ -16,18 +16,25 @@ import type { FixtureSite } from '../fixtures/sites';
 // they were seen in. `--update-snapshots=all` on the fixtures project draws the new leaves
 // afresh into test-results/approval/ for you to look at; only your approval copies them over.
 
-interface Leaf { site: FixtureSite; page: PageName; address: string; leaf: string }
+// A leaf's screens are named by its id, or by `name` where one page draws the same leaf twice.
+interface Leaf { site: FixtureSite; page: PageName; address: string; leaf: string; name?: string }
 
-// The design's episode page with the sample video it was drawn from: its player leaf.
+// The design's episode page with the sample video it was drawn from: its player leaf. The
+// design's article page with the sample article it was drawn from (step 9), compared with the
+// design page as its samples are (SAMPLE_CHANGES in targets.ts).
 const DESIGN_LEAVES: Leaf[] = [
   { site: 'episode', page: 'episode', address: '/episodes/gradient-descent-by-hand/', leaf: 'episode-player' },
+  { site: 'article', page: 'article', address: '/writing/gradient-descent-by-hand/', leaf: 'article-body' },
 ];
 // The episode page's notes, with the transcript; the episodes page's picks and full archive,
-// filled with the step 7 sample videos. At 390 and 1440 px.
+// filled with the step 7 sample videos (step 8). The writing page's shelf, filled with the
+// step 7 sample articles, and as the site launches, empty (step 9). At 390 and 1440 px.
 const NEW_LEAVES: Leaf[] = [
   { site: 'episode', page: 'episode', address: '/episodes/gradient-descent-by-hand/', leaf: 'episode-notes' },
   { site: 'pieces', page: 'episodes', address: '/episodes/', leaf: 'ep-picks' },
   { site: 'pieces', page: 'episodes', address: '/episodes/', leaf: 'ep-archive' },
+  { site: 'pieces', page: 'writing', address: '/writing/', leaf: 'writing-index' },
+  { site: 'writing-empty', page: 'writing', address: '/writing/', leaf: 'writing-index', name: 'writing-empty' },
 ];
 const NEW_VIEWS = VIEWS.filter((v) => v.width === 390 || v.width === 1440);
 
@@ -106,7 +113,8 @@ for (const view of VIEWS) {
       for (const l of DESIGN_LEAVES) {
         test(`${l.page} ${l.leaf}`, async ({ page, target }, testInfo) => {
           test.skip(target !== 'reference' && target !== 'fixture', 'The design files and their sample sites only');
-          const url = target === 'reference' ? urlFor('reference', view, l.page) : `${fixtureOrigin(l.site)}${l.address}`;
+          const design = SAMPLE_CHANGES[l.page] ? sampleUrl(view, l.page) : urlFor('reference', view, l.page);
+          const url = target === 'reference' ? design : `${fixtureOrigin(l.site)}${l.address}`;
           const name = (i: number) => screenName(view, paper, l.leaf, i);
           const file = (i: number) => testInfo.snapshotPath(name(i), { kind: 'screenshot' });
           if (testInfo.config.updateSnapshots === 'all') {
@@ -123,10 +131,10 @@ for (const view of VIEWS) {
       }
 
       for (const l of NEW_VIEWS.some((v) => v.name === view.name) ? NEW_LEAVES : []) {
-        test(`${l.page} ${l.leaf} as approved`, async ({ page, target }, testInfo) => {
+        test(`${l.page} ${l.name ?? l.leaf} as approved`, async ({ page, target }, testInfo) => {
           test.skip(target !== 'fixture', 'Drawn on the sample sites only');
           const url = `${fixtureOrigin(l.site)}${l.address}`;
-          const name = (i: number) => screenName(view, paper, l.leaf, i);
+          const name = (i: number) => screenName(view, paper, l.name ?? l.leaf, i);
           if (testInfo.config.updateSnapshots === 'all') {
             await makeScreens(page, url, l.leaf, (i) => path.join(CANDIDATES, name(i)), testInfo, name);
             return;

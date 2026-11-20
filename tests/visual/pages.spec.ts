@@ -100,8 +100,9 @@ for (const view of VIEWS) {
         });
       }
 
-      // The design pages as their samples are compared (SAMPLE_CHANGES), drawn from the design files.
-      for (const pageName of Object.keys(SAMPLE_CHANGES) as PageName[]) {
+      // The design pages as their samples are compared (SAMPLE_CHANGES), drawn from the design
+      // files. Pages compared leaf by leaf (the article) are drawn by leaves.spec.ts instead.
+      for (const pageName of (Object.keys(SAMPLE_CHANGES) as PageName[]).filter((name) => FIXTURE_PAGES[name])) {
         test(`${pageName} as sampled`, async ({ page, target }, testInfo) => {
           test.skip(target !== 'reference', 'Drawn from the design files only');
           await screens(page, sampleUrl(view, pageName), `${pageName}-samples`, testInfo);

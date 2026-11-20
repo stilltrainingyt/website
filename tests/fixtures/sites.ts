@@ -14,6 +14,9 @@ import type { Edition } from '../visual/materials';
 // edition's home page names one planned episode differently from the desktop's, so its site
 // lays one file over the desktop's. Each page has samples of its own: the design's home page and
 // its episodes page give the same episodes different titles.
+// A layer that is the site's own data folder, src/data/, rather than a folder of samples.
+const SITE_DATA = '<src/data>';
+
 export const FIXTURE_SITES = {
   home: ['home'],
   'home-pocket': ['home', 'home-pocket'],
@@ -29,6 +32,12 @@ export const FIXTURE_SITES = {
   // episode page draws it (step 8). Its player leaf is compared with the design's, and its
   // notes leaf with the screens you approved (tests/visual/leaves.spec.ts).
   episode: ['home', 'pieces', 'episode'],
+  // The design's article page: the step 7 samples, their gradient-descent article written as
+  // the design's article page draws it (step 9), compared leaf by leaf with the design's.
+  article: ['home', 'pieces', 'article'],
+  // The site's own words with no content at all, as it launches (step 9): the writing page's
+  // empty shelf. SITE_DATA stands for src/data/.
+  'writing-empty': [SITE_DATA],
 } as const satisfies Record<string, readonly string[]>;
 export type FixtureSite = keyof typeof FIXTURE_SITES;
 
@@ -47,7 +56,10 @@ export const fixtureDist = (site: FixtureSite): string => path.join(BUILT, site,
 // (CONTENT_ROOT, src/components/content.ts). Returns the build's output; a failed build throws.
 export async function buildFixtureSite(site: FixtureSite): Promise<string> {
   fs.rmSync(path.join(BUILT, site), { recursive: true, force: true });
-  for (const layer of FIXTURE_SITES[site]) fs.cpSync(path.resolve('tests', 'fixtures', layer), fixtureRoot(site), { recursive: true });
+  for (const layer of FIXTURE_SITES[site] as readonly string[]) {
+    if (layer === SITE_DATA) fs.cpSync(path.resolve('src', 'data'), path.join(fixtureRoot(site), 'data'), { recursive: true });
+    else fs.cpSync(path.resolve('tests', 'fixtures', layer), fixtureRoot(site), { recursive: true });
+  }
   const env = {
     ...process.env,
     CONTENT_ROOT: path.relative(process.cwd(), fixtureRoot(site)).split(path.sep).join('/'),

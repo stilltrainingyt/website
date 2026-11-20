@@ -1,0 +1,36 @@
+---
+// An article's own page in one edition: design-reference/'s article page as written, its words
+// from src/data/writing.yaml (article:) and the rest from the article's file (writing.ts).
+// Each part is marked data-edition, so edition.js keeps only the edition the width shows.
+//
+// What step 9 changes in the design's template: the chip and hand note under the title say when
+// the article was published and last updated; the text is the file's, its first paragraph with
+// the design's drop capital; "Watch the episode" opens the video the article names, and the
+// design's "Try it on the curve" (its sample's own link) is left out; the approved licence line
+// replaces "Suggest an edit on GitHub" and its line, as the plan says.
+import LicenceLine from './LicenceLine.astro';
+import type { ArticleContent } from './writing';
+
+interface Props { edition: 'desktop' | 'pocket'; article: ArticleContent }
+const { edition, article } = Astro.props;
+const { copy, title, summary, html, eyebrow, published, updated, watch, licence } = article;
+const desktop = edition === 'desktop';
+const Wrap = desktop ? 'div' : Fragment;
+const wrap = desktop ? { class: 'stage', 'data-edition': 'desktop' } : {};
+const mark = desktop ? {} : { 'data-edition': 'pocket' };
+---
+<Wrap {...wrap}>
+<section class="leaf " id="article-body" data-leaf {...mark}>
+<div class="stack art">
+  <div class="row"><a class="mini" href="/writing/" data-route="writing">&#8592; {copy.back}</a></div>
+  <p class="eyebrow">{eyebrow}</p>
+  <h2 class="arttitle">{title}</h2>
+  <p class="lede">{summary}</p>
+  <div class="row"><span class="chip open">{published}</span>{updated && <span class="hand">{updated}</span>}</div>
+  <hr class="hr">
+  <Fragment set:html={html} />
+  {watch && <div class="row"><a class="btn ghost" href={watch} data-route="episode"><span class="lbl">{copy.watch}</span><span class="arrow">&#8594;</span></a></div>}
+  <LicenceLine line={licence.line} licence={{ label: licence.label, url: licence.url }} />
+</div>
+</section>
+</Wrap>

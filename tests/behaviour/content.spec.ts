@@ -118,6 +118,7 @@ const SAMPLE: Files = {
   'data/upcoming.yaml': UPCOMING,
   'data/home.yaml': DATA('home.yaml'),
   'data/episodes.yaml': DATA('episodes.yaml'),
+  'data/writing.yaml': DATA('writing.yaml'),
   'content/videos/gradient-descent-by-hand.md': VIDEO,
   'content/transcripts/gradient-descent-by-hand.vtt': VTT,
   'content/videos/reinforcement-learning-unit-1.md': COURSE_VIDEO,
@@ -316,6 +317,46 @@ test.describe('content files', () => {
       expect(archive).not.toContain('Backpropagation without the chain-rule fear');
       expect(episodes.slice(0, episodes.indexOf('id="ep-picks"'))).toContain('Backpropagation without the chain-rule fear');
       expect(fs.existsSync(testInfo.outputPath('dist', 'episodes', 'st-003'))).toBe(false);
+    });
+  });
+
+  // Step 9: the writing pages' words, the shelf and a page for each published article.
+  test.describe('the writing pages', () => {
+    const WRITING = SAMPLE['data/writing.yaml'];
+
+    test('their words file stops the build when a field is missing or the licence is not https', async ({}, testInfo) => {
+      await stops(testInfo, changed({ 'data/writing.yaml': edit(WRITING, /^ {4}empty: .*\n/m, '') }),
+        'writing → writing', /index\.empty\W+Required/);
+      await stops(testInfo, changed({ 'data/writing.yaml': edit(WRITING, 'url: https://creativecommons.org', 'url: http://creativecommons.org') }),
+        'writing → writing', 'licence.url');
+      await stops(testInfo, changed({ 'data/writing.yaml': `${WRITING}home:\n  title: Elsewhere\n` }),
+        `${root(testInfo)}/data/writing.yaml holds the writing pages' words under one key, writing:, and nothing else`);
+      await stops(testInfo, changed({ 'data/writing.yaml': null }), `${root(testInfo)}/data/writing.yaml`);
+    });
+
+    test('each published article has its own page, and the shelf lists them newest first', async ({}, testInfo) => {
+      const built = await build(testInfo, SAMPLE);
+      expect(built.ok, built.output.slice(-3000)).toBe(true);
+      const page = (address: string) => fs.readFileSync(testInfo.outputPath('dist', ...address.split('/').filter(Boolean), 'index.html'), 'utf8');
+      const worked = page('/writing/gradient-descent-worked/');
+      expect(worked).toContain('<h2 class="arttitle">Gradient descent, worked out</h2>');
+      expect(worked).toContain('<p class="eyebrow">AI · Foundations · 1 min read</p>');
+      expect(worked).toContain('<p class="dropcap">The working, step by step.</p>');
+      expect(worked).toContain('<span class="chip open">Published 2 November 2026</span>');
+      expect(worked).toContain('<a class="btn ghost" href="/episodes/gradient-descent-by-hand/" data-route="episode">');
+      expect(worked).toContain('© 2026 ');
+      expect(worked).toContain('href="https://creativecommons.org/licenses/by/4.0/"');
+      // An E³ article names its mode, and its last update; one with no video has no button.
+      const pi = page('/writing/a-capable-model-on-a-raspberry-pi/');
+      expect(pi).toContain('<p class="eyebrow">Tech · E³ · Experiment · 1 min read</p>');
+      expect(pi).toContain('<span class="hand">updated 5 November 2026</span>');
+      expect(pi).not.toContain('Watch the episode');
+
+      const writing = page('/writing/');
+      const from = writing.indexOf('id="alist"'), shelf = writing.slice(from, writing.indexOf('id="aempty"', from));
+      expect([...shelf.matchAll(/<h3>([^<]+)<\/h3>/g)].map((m) => m[1])).toEqual(['A capable model on a Raspberry Pi', 'Gradient descent, worked out']);
+      expect(shelf).toContain('data-shelf="e3:experiment"');
+      expect(writing).toMatch(/<p class="empty hand" id="aempty" data-empty hidden(="")?>/);
     });
   });
 

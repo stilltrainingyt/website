@@ -1,0 +1,54 @@
+---
+// The writing page in one edition: design-reference/'s writing page as written, its words from
+// src/data/writing.yaml and its shelf from the content files (writing.ts). Its subject chips
+// carry the topics of taxonomy.json (allowed change 3) and its list the published articles,
+// drawn as the design draws its published one; drafts never appear.
+//
+// Once an article is published, the shelf gains what the episodes archive has (step 8, "the two
+// archives stay alike"), in the places step 7's review page showed them: pinned, latest and hot
+// under the lede, then the board's track row over the subject chips, and the approved sort
+// control. With none, the page is the design's leaf with its empty line showing. Each part is
+// marked data-edition, so edition.js keeps only the edition the width shows.
+//
+// The design's shelf script (router.js) filters by subject; src/scripts/archive.js adds the
+// track row and the order, and keeps the two filters together.
+import Highlights from './Highlights.astro';
+import SortControl from './SortControl.astro';
+import { chipClass } from './home';
+import type { WritingContent } from './writing';
+
+interface Props { edition: 'desktop' | 'pocket'; writing: WritingContent }
+const { edition, writing } = Astro.props;
+const { copy, picks, shelf, shelves, topics, sorts } = writing;
+const desktop = edition === 'desktop';
+const filled = shelf.length > 0;
+const Wrap = desktop ? 'div' : Fragment;
+const wrap = desktop ? { class: 'stage', 'data-edition': 'desktop' } : {};
+const mark = desktop ? {} : { 'data-edition': 'pocket' };
+---
+<Wrap {...wrap}>
+<section class="leaf " id="writing-index" data-leaf {...mark}>
+<div class="stack" data-archive>
+  <p class="eyebrow">{copy.eyebrow}</p>
+  <h2>{copy.title}</h2>
+  <p class="lede">{copy.lede}</p>
+  {filled && <Fragment>
+  <Highlights sections={picks} />
+  <p class="eyebrow">{copy.everything}</p>
+  {desktop
+    ? <div class="row-ctl" role="group" aria-label="Filter by track"><button class="mini" type="button" data-shelf="all" aria-pressed="true">All</button>{shelves.map((s) => <button class="mini" type="button" data-shelf={s.id} aria-pressed="false">{s.label}</button>)}</div>
+    : <div class="filters" role="group" aria-label="Filter by track"><button class="mini" type="button" data-shelf="all" aria-pressed="true">All</button>{shelves.map((s) => <button class="mini" type="button" data-shelf={s.id} aria-pressed="false">{s.label}</button>)}</div>}
+  </Fragment>}
+  <div class="cats" role="group" aria-label="Filter by subject"><button class="mini" type="button" data-cat-filter="all" aria-pressed="true">All</button>{topics.map((t) => <button class="mini" type="button" data-cat-filter={t.id} aria-pressed="false">{t.label}</button>)}</div>
+  {filled && <SortControl edition={edition} id="sort-writing" label={copy.sort.label} options={sorts} current="newest" />}
+  <div class="alist" id="alist" data-items>{shelf.map((card) => (
+    <a class="aitem" href={card.href} data-route={card.route} data-cat={card.topic} data-shelf={card.shelf} data-topic-at={card.topicAt} data-published={card.published}>
+      <div class="row">{card.chips.map((chip) => <span class={chipClass(chip.look)}>{chip.text}</span>)}</div>
+      <h3>{card.title}</h3><p>{card.summary}</p>
+      <span class="go">{card.go} &#8594;</span></a>
+  ))}</div>
+  <p class="empty hand" id="aempty" data-empty hidden={filled}>{copy.empty}</p>
+  <p class="small">{copy.note}</p>
+</div>
+</section>
+</Wrap>
