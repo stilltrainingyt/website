@@ -115,6 +115,9 @@ const chip = z.union([text, z.strictObject({ text, look })], required()).transfo
 // What the home page's cabinet shows of a file in place of its own summary and chips, each only
 // when given (your decision, step 5).
 const cabinet = blank(z.strictObject({ summary: blank(text), tags: blank(z.array(chip).min(1, 'Required')) }));
+// A project's cabinet: fields may also give its place among the cabinet's sheets, since the
+// design's cabinet and projects page list the same projects in different orders (step 10).
+const projectCabinet = blank(z.strictObject({ summary: blank(text), tags: blank(z.array(chip).min(1, 'Required')), place: blank(z.number().int().positive()) }));
 
 // A video, src/content/videos/<address>.md, with its notes below the front matter.
 export const Video = z.strictObject({
@@ -183,7 +186,7 @@ export const Project = z.strictObject({
   tags: list(text),
   inProgress: flag,
   order: z.number(required()).int(),
-  cabinet,
+  cabinet: projectCabinet,
 });
 
 // A planned episode in src/data/upcoming.yaml, listed under its slate number.
@@ -325,6 +328,55 @@ export const Writing = z.strictObject({
     licence: z.strictObject({ line: says('year'), label: text, url: z.url({ protocol: /^https$/ }) }),
   }),
 });
+
+// The projects page's words, src/data/projects.yaml, under its one key, projects:. The lede has
+// one line for several projects, one for a single project and one for none; {count} is the
+// number in words, capitalised ("Eleven"). The groups, kinds, titles and tags come from the
+// project files; the GitHub link is the personal one in site.json.
+export const ProjectsWords = z.strictObject({
+  eyebrow: text,
+  title: text,
+  lede: z.strictObject({ some: says('count'), one: text, none: text }),
+  group: says('group', 'count'),
+  inProgress: text,
+  empty: text,
+  github: text,
+});
+
+// The about page's words, src/data/about.yaml, under its one key, about:. The colophon draws the
+// design itself (its colours, fonts, keys and grid) and stays in the page's markup.
+const row = z.strictObject({ label: text, text });
+export const AboutWords = z.strictObject({
+  eyebrow: text,
+  title: text,
+  lede: text,
+  paragraphs: lines,
+  card: z.strictObject({ head: text, rows: z.array(row, required()).min(1, 'Required') }),
+  rules: z.strictObject({ eyebrow: text, title: text, list: lines }),
+});
+
+// The subscribe page's words, src/data/subscribe.yaml, under its one key, subscribe:. The slip's
+// four links go to the addresses in site.json and the site's RSS feed.
+export const SubscribeWords = z.strictObject({
+  eyebrow: text,
+  title: text,
+  lede: both(text),
+  coupon: z.strictObject({ eyebrow: text, title: text, tear: both(text), note: text }),
+  slip: z.strictObject({
+    eyebrow: text,
+    title: text,
+    text,                             // desktop only
+    youtube: text,
+    rss: text,
+    github: text,
+    linkedin: text,
+    tapeBack: text,
+  }),
+  elsewhere: z.strictObject({ eyebrow: text, title: text, youtube: text, github: text, linkedin: text }),
+});
+
+// The torn-out page's words, src/data/missing.yaml, under its one key, missing:.
+export const MissingWords = z.strictObject({ eyebrow: text, title: text, lede: text, back: text });
 
 // A transcript, src/content/transcripts/<address>.vtt: the caption file YouTube Studio gives.
 const Cue = z.strictObject({ start: z.number().min(0), end: z.number().min(0), text: z.string() });

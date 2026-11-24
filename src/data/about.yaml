@@ -1,0 +1,29 @@
+# The about page's words: the intro and reader's card, then the five rules. The colophon describes
+# the design itself and stays in the page.
+about:
+  eyebrow: About
+  title: The person still training
+  # DRAFT (step 10): for you to edit. The design's intro said AI "and nothing else".
+  lede: I am a computer science student working towards a career in AI, as an engineer who understands it all the way down, and learning everything around it as I go.
+  paragraphs:
+    # DRAFT (step 10): "learn it" became "learn things", as the channel is wider than AI.
+    - This channel is how I make myself learn things properly. If I can explain an idea from zero, with the working shown, I know it. If I can’t, the episode isn’t ready.
+    # DRAFT (step 10): for you to edit. Names the topics in the order the plan puts them.
+    - It is wider than AI. Careers, skills, research and the things I build come first, and I am still exploring new subjects and forming new opinions every week, so history, the world and what is new in tech have shelves here too.
+  card:
+    head: Reader’s card · no. 001
+    rows:
+      - { label: Name, text: "Pratyush, who goes by Kaka" }
+      - { label: Studying, text: "BTech CSE (Data Science), Manipal University Jaipur" }
+      - { label: Based in, text: "Noida, India" }
+      - { label: Building, text: "The Hallucinated Lab, co-founded with a friend" }
+      - { label: Clubs, text: "Accelerate (student coordinator), Panacea CCE, WikiClubTech MUJ" }
+  rules:
+    eyebrow: About · what I hold to
+    title: Five rules for the work
+    list:
+      - AI should be for everyone, not only for people who can pay for it.
+      - Run it on the device. Your data should not have to leave it.
+      - Running a model should be cheap enough to do every day.
+      - A capable model should fit on weak hardware.
+      - Build it safely, and build it to last.

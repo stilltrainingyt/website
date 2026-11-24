@@ -5,7 +5,7 @@ import fs from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { defineCollection } from 'astro:content';
 import { file, glob, type Loader, type LoaderContext } from 'astro/loaders';
-import { ROOT, SLATE, Article, Episodes, Home, Project, Transcript, Upcoming, Video, Writing, addressOf, parseVtt } from './components/content';
+import { ROOT, SLATE, AboutWords, Article, Episodes, Home, MissingWords, Project, ProjectsWords, SubscribeWords, Transcript, Upcoming, Video, Writing, addressOf, parseVtt } from './components/content';
 
 // Astro's loaders log some faults and carry on without the file: one they cannot read or
 // parse, an entry with no id. While a loader loads, each fault it logs stops the build instead.
@@ -128,4 +128,10 @@ export const collections = {
   home: defineCollection({ loader: words('home', "the home page's words"), schema: Home }),
   episodes: defineCollection({ loader: words('episodes', "the episodes pages' words"), schema: Episodes }),
   writing: defineCollection({ loader: words('writing', "the writing pages' words"), schema: Writing }),
+  // The projects collection holds the project files, so the projects page's words go by
+  // projectsWords; their file is still projects.yaml, under projects:.
+  projectsWords: defineCollection({ loader: words('projects', "the projects page's words"), schema: ProjectsWords }),
+  about: defineCollection({ loader: words('about', "the about page's words"), schema: AboutWords }),
+  subscribe: defineCollection({ loader: words('subscribe', "the subscribe page's words"), schema: SubscribeWords }),
+  missing: defineCollection({ loader: words('missing', "the torn-out page's words"), schema: MissingWords }),
 };

@@ -1,5 +1,6 @@
 ---
-// The about page's address. Its page is empty until its own step brings its content.
+// The about page: both editions of the design's about page (About.astro).
 import Journal from '../layouts/Journal.astro';
+import About from '../components/About.astro';
 ---
-<Journal page="about" />
+<Journal page="about"><About edition="desktop" /><About edition="pocket" /></Journal>

@@ -1,5 +1,9 @@
 ---
-// The subscribe page's address. Its page is empty until its own step brings its content.
+// The subscribe page: both editions of the design's subscribe page (Subscribe.astro).
 import Journal from '../layouts/Journal.astro';
+import Subscribe from '../components/Subscribe.astro';
+import { subscribeContent } from '../components/pages';
+
+const subscribe = await subscribeContent();
 ---
-<Journal page="subscribe" />
+<Journal page="subscribe"><Subscribe edition="desktop" subscribe={subscribe} /><Subscribe edition="pocket" subscribe={subscribe} /></Journal>

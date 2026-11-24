@@ -46,8 +46,9 @@ export async function homeContent() {
     return { id: track.id, title: track.label, ...copy.tracks.cards[track.id as keyof typeof copy.tracks.cards], items: [...published, ...planned].slice(0, CARD_ITEMS) };
   });
 
-  // The cabinet: the newest articles, and the first projects in the projects page's order. A
-  // file's cabinet: fields, when given, stand in for its summary and its chips.
+  // The cabinet: the newest articles, and the projects given a cabinet place, in that order (or,
+  // when none is, the first projects in the projects page's order). A file's cabinet: fields,
+  // when given, stand in for its summary and its chips.
   const articleSheets: Sheet[] = articles
     .sort((a, b) => newestFirst(a.data.published, b.data.published) || a.id.localeCompare(b.id))
     .slice(0, ARTICLE_SHEETS)
@@ -56,8 +57,10 @@ export async function homeContent() {
       summary: a.data.cabinet?.summary ?? a.data.summary,
       tags: a.data.cabinet?.tags ?? [{ text: topic.get(a.data.topic)!, look: 'plain' }],
     }));
-  const projectSheets: Sheet[] = projects
-    .sort((a, b) => a.data.order - b.data.order || a.id.localeCompare(b.id))
+  const placed = projects.filter((p) => p.data.cabinet?.place !== undefined);
+  const projectSheets: Sheet[] = (placed.length > 0
+    ? placed.sort((a, b) => a.data.cabinet!.place! - b.data.cabinet!.place! || a.id.localeCompare(b.id))
+    : projects.sort((a, b) => a.data.order - b.data.order || a.id.localeCompare(b.id)))
     .slice(0, PROJECT_SHEETS)
     .map((p) => ({
       title: p.data.title,
