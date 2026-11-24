@@ -43,9 +43,9 @@ export const ADDRESSES: Partial<Record<PageName, string>> = {
 };
 
 // The pages with an address of their own (step 3), and those still empty until their own step
-// brings their content (home in step 5, episodes in step 8, writing in step 9).
+// brought its content (home in step 5, episodes in step 8, writing in step 9, the rest in step 10).
 export const SHELL_PAGES: PageName[] = ['home', 'episodes', 'writing', 'projects', 'about', 'subscribe', 'missing'];
-export const EMPTY_PAGES: PageName[] = SHELL_PAGES.filter((name) => name !== 'home' && name !== 'episodes' && name !== 'writing');
+export const EMPTY_PAGES: PageName[] = [];
 
 export function urlFor(target: Target, view: View, pageName: PageName): string {
   if (target === 'reference') {
@@ -109,6 +109,37 @@ export async function serveFixtures(context: BrowserContext): Promise<void> {
 // under "<page>-samples". The design's board links ST-002's title to the page it gives an
 // episode still being cut; on the site an upcoming episode has no page, so its title is plain.
 export const SAMPLES_ORIGIN = 'http://samples.test';
+// The subscribe slip's underside in the design: from its opening tag to the end of its "Tape it
+// back" row and its own closing tag.
+function designSlip(edition: Edition): string {
+  const html = designHtml(edition);
+  const start = html.indexOf('<div class="under"');
+  const tape = html.indexOf('Tape it back</button></div>', start);
+  const end = html.indexOf('</div>', tape + 'Tape it back</button></div>'.length) + '</div>'.length;
+  if (start < 0 || tape < 0 || html.indexOf('<div class="under"', start + 1) >= 0) throw new Error(`${edition}: expected one slip`);
+  return html.slice(start, end);
+}
+// The slip's four links as the site draws them (SlipLinks.astro), with the step 7 words.
+const SLIP_LINKS = (label: (text: string) => string) => [
+  `<a class="btn" href="https://www.youtube.com/@StillTraining_ai" target="_blank" rel="noopener">${label('Subscribe on YouTube')}<span class="arrow">↗</span></a>`,
+  `<a class="btn ghost" href="/rss.xml">${label('Follow by RSS')}<span class="arrow">→</span></a>`,
+  `<a class="btn ghost" href="https://github.com/stilltrainingyt" target="_blank" rel="noopener">${label('Follow on GitHub')}<span class="arrow">↗</span></a>`,
+  `<a class="btn ghost" href="https://www.linkedin.com/in/pratyush-p-1226b532b/" target="_blank" rel="noopener">${label('Connect on LinkedIn')}<span class="arrow">↗</span></a>`,
+].join('');
+const SLIP: Record<Edition, string> = {
+  desktop: '<div class="under" id="under">\n    <p class="eyebrow">Torn · now pick a way in</p>\n    <h3 style="color:var(--ink-inv)">Every new episode, wherever you follow along</h3>\n'
+    + '    <p style="color:var(--ink-inv); opacity:.86; font-size:16px">No newsletter and no digest. Follow the channel where you already read.</p>\n'
+    + `    <div class="btnrow">\n      ${SLIP_LINKS((t) => `<span class="lbl">${t}</span>`)}\n    </div>\n    <div><button class="mini" id="tapeBtn" type="button">Tape it back</button></div>\n  </div>`,
+  pocket: '<div class="under">\n    <p class="eyebrow">Torn · now pick a way in</p>\n    <h3>Every new episode, wherever you follow along</h3>\n'
+    + `    <div class="stack" style="gap:12px">\n      ${SLIP_LINKS((t) => `<span>${t}</span>`)}\n    </div>\n    <div><button class="mini" id="tapeBtn" type="button">Tape it back</button></div>\n  </div>`,
+};
+const ELSEWHERE_ROWS = '<a class="linkrow" href="https://github.com/06pratyush" target="_blank" rel="noopener"><span>GitHub</span><span class="u">github.com/06pratyush &#8599;</span></a>\n'
+  + '  <div class="linkrow off"><span>YouTube</span><span class="u">Still Training &middot; channel link goes here</span></div>\n'
+  + '  <div class="linkrow off"><span>Website</span><span class="u">stilltraining.in</span></div>';
+const LINK_ROWS = '<a class="linkrow" href="https://www.youtube.com/@StillTraining_ai" target="_blank" rel="noopener"><span>YouTube</span><span class="u">youtube.com/@StillTraining_ai &#8599;</span></a>'
+  + '<a class="linkrow" href="https://github.com/stilltrainingyt" target="_blank" rel="noopener"><span>GitHub</span><span class="u">github.com/stilltrainingyt &#8599;</span></a>'
+  + '<a class="linkrow" href="https://www.linkedin.com/in/pratyush-p-1226b532b/" target="_blank" rel="noopener"><span>LinkedIn</span><span class="u">linkedin.com/in/pratyush-p-1226b532b &#8599;</span></a>';
+
 export const SAMPLE_CHANGES: Partial<Record<PageName, Record<Edition, { from: string; to: string }[]>>> = {
   episodes: {
     desktop: [{ from: '<td class="ttl"><a href="#episode" data-route="episode">Gradient descent, by hand</a></td>', to: '<td class="ttl">Gradient descent, by hand</td>' }],
@@ -127,6 +158,20 @@ export const SAMPLE_CHANGES: Partial<Record<PageName, Record<Edition, { from: st
       to: '<p class="small" style="flex:1 1 220px; min-width:0">© 2026 Pratyush P · CC BY 4.0 · Credit: Pratyush P, Still Training, with a link to this page.</p>\n  <a class="mini" href="https://creativecommons.org/licenses/by/4.0/" target="_blank" rel="license noopener">Licence &#8599;</a>',
     },
   ]])) as Record<Edition, { from: string; to: string }[]>,
+  // Step 10's subscribe page: under the slip, the four links you approved in step 7 in place of
+  // the email form (the slip's height follows what is under it, so the design is drawn with them
+  // to compare like with like); and the approved YouTube, GitHub and LinkedIn rows in place of
+  // the design's GitHub row and its two placeholders.
+  subscribe: {
+    desktop: [
+      { from: designSlip('desktop'), to: SLIP.desktop },
+      { from: ELSEWHERE_ROWS, to: LINK_ROWS },
+    ],
+    pocket: [
+      { from: designSlip('pocket'), to: SLIP.pocket },
+      { from: ELSEWHERE_ROWS, to: LINK_ROWS },
+    ],
+  },
 };
 
 export const sampleUrl = (view: View, pageName: PageName): string => `${SAMPLES_ORIGIN}/${pageName}/${view.file}#${pageName}`;

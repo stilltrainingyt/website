@@ -35,9 +35,9 @@ export const FIXTURE_SITES = {
   // The design's article page: the step 7 samples, their gradient-descent article written as
   // the design's article page draws it (step 9), compared leaf by leaf with the design's.
   article: ['home', 'pieces', 'article'],
-  // The site's own words with no content at all, as it launches (step 9): the writing page's
-  // empty shelf. SITE_DATA stands for src/data/.
-  'writing-empty': [SITE_DATA],
+  // The site's own words with no content at all, as it launches: the writing page's empty shelf
+  // (step 9) and the projects page with no files (step 10). SITE_DATA stands for src/data/.
+  launch: [SITE_DATA],
 } as const satisfies Record<string, readonly string[]>;
 export type FixtureSite = keyof typeof FIXTURE_SITES;
 
@@ -45,6 +45,12 @@ export type FixtureSite = keyof typeof FIXTURE_SITES;
 export const FIXTURE_PAGES: Partial<Record<PageName, Record<Edition, FixtureSite>>> = {
   home: { desktop: 'home', pocket: 'home-pocket' },
   episodes: { desktop: 'episodes', pocket: 'episodes-pocket' },
+  // Step 10: the design's projects page is the home samples' eleven projects; the about,
+  // subscribe and torn-out pages are the design's words (tests/fixtures/home/data).
+  projects: { desktop: 'home', pocket: 'home-pocket' },
+  about: { desktop: 'home', pocket: 'home-pocket' },
+  subscribe: { desktop: 'home', pocket: 'home-pocket' },
+  missing: { desktop: 'home', pocket: 'home-pocket' },
 };
 
 // Each site's folders laid together, and the site built from them, inside Playwright's output.

@@ -119,6 +119,10 @@ const SAMPLE: Files = {
   'data/home.yaml': DATA('home.yaml'),
   'data/episodes.yaml': DATA('episodes.yaml'),
   'data/writing.yaml': DATA('writing.yaml'),
+  'data/projects.yaml': DATA('projects.yaml'),
+  'data/about.yaml': DATA('about.yaml'),
+  'data/subscribe.yaml': DATA('subscribe.yaml'),
+  'data/missing.yaml': DATA('missing.yaml'),
   'content/videos/gradient-descent-by-hand.md': VIDEO,
   'content/transcripts/gradient-descent-by-hand.vtt': VTT,
   'content/videos/reinforcement-learning-unit-1.md': COURSE_VIDEO,
@@ -317,6 +321,40 @@ test.describe('content files', () => {
       expect(archive).not.toContain('Backpropagation without the chain-rule fear');
       expect(episodes.slice(0, episodes.indexOf('id="ep-picks"'))).toContain('Backpropagation without the chain-rule fear');
       expect(fs.existsSync(testInfo.outputPath('dist', 'episodes', 'st-003'))).toBe(false);
+    });
+  });
+
+  // Step 10: the projects, about, subscribe and torn-out pages' words, and the projects page.
+  test.describe('the projects, about, subscribe and torn-out pages', () => {
+    test('their words files stop the build when a field is missing or another key is there', async ({}, testInfo) => {
+      test.setTimeout(240_000);
+      await stops(testInfo, changed({ 'data/projects.yaml': edit(SAMPLE['data/projects.yaml'], /^ {2}empty: .*\n/m, '') }), /empty\W+Required/);
+      await stops(testInfo, changed({ 'data/about.yaml': edit(SAMPLE['data/about.yaml'], /^ {2}title: .*\n/m, '') }), /title\W+Required/);
+      await stops(testInfo, changed({ 'data/subscribe.yaml': `${SAMPLE['data/subscribe.yaml']}home:\n  title: Elsewhere\n` }),
+        `${root(testInfo)}/data/subscribe.yaml holds the subscribe page's words under one key, subscribe:, and nothing else`);
+      await stops(testInfo, changed({ 'data/missing.yaml': null }), `${root(testInfo)}/data/missing.yaml`);
+    });
+
+    test('the projects page files each project in its group, and the cabinet takes the placed ones', async ({}, testInfo) => {
+      const project = (title: string, group: string, order: number, extra = '') => `---\ntitle: ${title}\nkind: Tool\ngroup: ${group}\nsummary: The summary of ${title}.\ntags: [One]\norder: ${order}\n${extra}---\n`;
+      const built = await build(testInfo, changed({
+        'content/projects/contextcore.md': null,
+        'content/projects/b.md': project('B', 'Research', 3, 'cabinet:\n  place: 1\n'),
+        'content/projects/a.md': project('A', 'Tools', 1),
+        'content/projects/c.md': project('C', 'Tools', 2, 'inProgress: true\ncabinet:\n  place: 2\n'),
+      }));
+      expect(built.ok, built.output.slice(-3000)).toBe(true);
+      const html = fs.readFileSync(testInfo.outputPath('dist', 'projects', 'index.html'), 'utf8');
+      const desk = html.slice(html.indexOf('id="projects-index"'), html.indexOf('</section>', html.indexOf('id="projects-index"')));
+      // Groups in the order of their first project, each with its count; every second one alt.
+      expect([...desk.matchAll(/<div class="pgroup"><p class="eyebrow">([^<]+)<\/p>/g)].map((m) => m[1])).toEqual(['Tools · 2', 'Research · 1']);
+      expect([...desk.matchAll(/<article class="([^"]+)"><span class="ftab">Tool<\/span><h3>([^<]+)<\/h3>/g)].map((m) => `${m[2]} ${m[1]}`)).toEqual(['A pfile', 'C pfile', 'B pfile alt']);
+      expect(desk).toContain('<span class="chip open">In progress</span>');
+      expect(desk).not.toContain('class="empty hand"');
+      // The cabinet: only the projects given a place, in that order.
+      const home = fs.readFileSync(testInfo.outputPath('dist', 'index.html'), 'utf8');
+      const drawer = home.slice(home.indexOf('id="drawer-projects"'));
+      expect([...drawer.slice(0, drawer.indexOf('</section>')).matchAll(/class="sheet"><h3>([^<]+)<\/h3>/g)].map((m) => m[1])).toEqual(['B', 'C']);
     });
   });
 

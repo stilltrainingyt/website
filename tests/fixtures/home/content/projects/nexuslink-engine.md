@@ -6,4 +6,6 @@ summary: "A local-first, headless peer-to-peer communication and storage kit for
 tags: ["Rust core", "C ABI", "Python SDK"]
 inProgress: false
 order: 2
+cabinet:
+  place: 2
 ---

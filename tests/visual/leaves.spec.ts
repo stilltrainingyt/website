@@ -34,7 +34,9 @@ const NEW_LEAVES: Leaf[] = [
   { site: 'pieces', page: 'episodes', address: '/episodes/', leaf: 'ep-picks' },
   { site: 'pieces', page: 'episodes', address: '/episodes/', leaf: 'ep-archive' },
   { site: 'pieces', page: 'writing', address: '/writing/', leaf: 'writing-index' },
-  { site: 'writing-empty', page: 'writing', address: '/writing/', leaf: 'writing-index', name: 'writing-empty' },
+  { site: 'launch', page: 'writing', address: '/writing/', leaf: 'writing-index', name: 'writing-empty' },
+  // Step 10: the projects page with no project files, as the site launches.
+  { site: 'launch', page: 'projects', address: '/projects/', leaf: 'projects-index', name: 'projects-empty' },
 ];
 const NEW_VIEWS = VIEWS.filter((v) => v.width === 390 || v.width === 1440);
 
