@@ -1,5 +1,10 @@
 ---
-// The projects page's address. Its page is empty until its own step brings its content.
+// The projects page: both editions of the design's projects page (Projects.astro), filled from
+// the files in src/content/projects/.
 import Journal from '../layouts/Journal.astro';
+import Projects from '../components/Projects.astro';
+import { projectsContent } from '../components/pages';
+
+const projects = await projectsContent();
 ---
-<Journal page="projects" />
+<Journal page="projects"><Projects edition="desktop" projects={projects} /><Projects edition="pocket" projects={projects} /></Journal>

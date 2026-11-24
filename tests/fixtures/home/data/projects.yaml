@@ -1,0 +1,12 @@
+# The design's projects page words, for the design samples.
+projects:
+  eyebrow: Projects
+  title: Things I have built, or am building
+  lede:
+    some: "{count} files. Some are finished, some are still open on the desk."
+    one: One file. It is still open on the desk.
+    none: No files yet. Each one goes on the desk as it is started.
+  group: "{group} · {count}"
+  inProgress: In progress
+  empty: Nothing filed on this shelf yet.
+  github: Public code on GitHub

@@ -5,5 +5,7 @@ group: Research and reproductions
 summary: "A domain-specialised small model, built alongside a phased study plan."
 tags: ["SLM"]
 inProgress: true
-order: 6
+order: 8
+cabinet:
+  place: 6
 ---

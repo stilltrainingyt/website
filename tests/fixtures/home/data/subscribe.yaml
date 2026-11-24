@@ -1,0 +1,30 @@
+# The design's subscribe page words, for the design samples, with the slip's four links as you
+# approved them in step 7.
+subscribe:
+  eyebrow: Subscribe · tear along the line
+  title: Take the slip with you
+  lede:
+    desktop: "One note per episode: what it covers, the numericals inside it, and the file you need to follow along. Tear the slip off to leave your address."
+    pocket: "One note per episode: what it covers, the numericals inside it, and the files to follow along."
+  coupon:
+    eyebrow: Still Training · episode notes
+    title: One slip per episode
+    tear:
+      desktop: Tear it off
+      pocket: Pull down to tear
+    note: Nothing is sent from this page. The field underneath is the design, not a live list.
+  slip:
+    eyebrow: Torn · now pick a way in
+    title: Every new episode, wherever you follow along
+    text: No newsletter and no digest. Follow the channel where you already read.
+    youtube: Subscribe on YouTube
+    rss: Follow by RSS
+    github: Follow on GitHub
+    linkedin: Connect on LinkedIn
+    tapeBack: Tape it back
+  elsewhere:
+    eyebrow: Subscribe · elsewhere
+    title: Find the notebook elsewhere
+    youtube: YouTube
+    github: GitHub
+    linkedin: LinkedIn

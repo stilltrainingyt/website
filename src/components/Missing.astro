@@ -1,0 +1,22 @@
+---
+// The torn-out page in one edition: design-reference/'s missing page as written, its words from
+// src/data/missing.yaml. Its button turns back to the cover.
+import { missingWords } from './pages';
+
+interface Props { edition: 'desktop' | 'pocket' }
+const desktop = Astro.props.edition === 'desktop';
+const copy = await missingWords();
+const Wrap = desktop ? 'div' : Fragment;
+const wrap = desktop ? { class: 'stage', 'data-edition': 'desktop' } : {};
+const mark = desktop ? {} : { 'data-edition': 'pocket' };
+---
+<Wrap {...wrap}>
+<section class="leaf gridded torn" id="missing-leaf" data-leaf {...mark}>
+<div class="stack">
+  <p class="eyebrow">{copy.eyebrow}</p>
+  <h2>{copy.title}</h2>
+  <p class="lede">{copy.lede}</p>
+  <div class="row"><a class="btn" href="/" data-route="home"><span class="lbl">{copy.back}</span><span class="arrow">&#8594;</span></a></div>
+</div>
+</section>
+</Wrap>

@@ -1,0 +1,33 @@
+# The subscribe page's words: the slip, what its torn half reveals, and the "elsewhere" rows. The
+# links go to the addresses in site.json and to the site's RSS feed.
+subscribe:
+  eyebrow: Subscribe · tear along the line
+  title: Take the slip with you
+  # DRAFT (step 10): for you to edit. The design's lede asked for an email address.
+  lede:
+    desktop: Every episode goes up on YouTube first, with its notes, numericals and files on its own page here. Tear the slip off to pick where you follow along.
+    pocket: Every episode goes up on YouTube first, with its notes and files on its own page here.
+  coupon:
+    eyebrow: Still Training · episode notes
+    title: One slip per episode
+    tear:
+      desktop: Tear it off
+      pocket: Pull down to tear
+    # DRAFT (step 10): for you to edit. The design's line said the field underneath was a design.
+    note: Nothing is sent from this page. Underneath are four places to follow along.
+  # What the torn slip reveals (approved in step 7).
+  slip:
+    eyebrow: Torn · now pick a way in
+    title: Every new episode, wherever you follow along
+    text: No newsletter and no digest. Follow the channel where you already read.   # desktop only
+    youtube: Subscribe on YouTube
+    rss: Follow by RSS
+    github: Follow on GitHub
+    linkedin: Connect on LinkedIn
+    tapeBack: Tape it back
+  elsewhere:
+    eyebrow: Subscribe · elsewhere
+    title: Find the notebook elsewhere
+    youtube: YouTube
+    github: GitHub
+    linkedin: LinkedIn

@@ -24,6 +24,10 @@ Every video, transcript, article, project and planned episode is a text file. Bl
 - `src/data/home.yaml`: the home page's words (cover, premise, track cards, playground, cabinet), with a `desktop:` and a `pocket:` version where the two editions word a line differently
 - `src/data/episodes.yaml`: the episodes page's and every video page's words (stations, board, picks, archive, player, notes), in the same form
 - `src/data/writing.yaml`: the writing page's and every article page's words (the shelf, the article's eyebrow and dates, the licence line)
+- `src/data/projects.yaml`: the projects page's words (its lede for several files, one and none, the group heading, the empty line)
+- `src/data/about.yaml`: the about page's intro, reader's card and five rules
+- `src/data/subscribe.yaml`: the subscribe page's words (the coupon, the slip over the four links, the elsewhere rows)
+- `src/data/missing.yaml`: the torn-out page's words
 
 The home page's track cards list each track's latest episodes, newest first, then its planned ones as plain text, four at most. Its cabinet shows the four newest articles and the first six projects by `order`; an article or project may carry `cabinet:` tags and a summary to show there instead of its own.
 

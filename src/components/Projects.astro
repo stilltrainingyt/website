@@ -1,0 +1,34 @@
+---
+// The projects page in one edition: design-reference/'s projects page as written, its words from
+// src/data/projects.yaml and its files from src/content/projects/ (pages.ts). Each group is the
+// design's .pgroup of .pfile cards, every second group in the design's alternate colour. With no
+// project files, the lede's line for none and the design's empty line show in place of the groups.
+// Each part is marked data-edition, so edition.js keeps only the edition the width shows.
+import type { ProjectsContent } from './pages';
+
+interface Props { edition: 'desktop' | 'pocket'; projects: ProjectsContent }
+const { edition, projects } = Astro.props;
+const { copy, lede, github, groups } = projects;
+const desktop = edition === 'desktop';
+const Wrap = desktop ? 'div' : Fragment;
+const wrap = desktop ? { class: 'stage', 'data-edition': 'desktop' } : {};
+const mark = desktop ? {} : { 'data-edition': 'pocket' };
+const shown = (href: string) => href.replace(/^https:\/\//, '');
+---
+<Wrap {...wrap}>
+<section class="leaf " id="projects-index" data-leaf {...mark}>
+<div class="stack">
+  <p class="eyebrow">{copy.eyebrow}</p>
+  <h2>{copy.title}</h2>
+  <p class="lede">{lede}</p>
+  {groups.length === 0 && <p class="empty hand">{copy.empty}</p>}
+  {groups.map((group) => (
+    <div class="pgroup"><p class="eyebrow">{group.eyebrow}</p><div class="projgrid">{group.files.map((file) => (
+      <article class={group.alt ? 'pfile alt' : 'pfile'}><span class="ftab">{file.kind}</span><h3>{file.title}</h3><p>{file.summary}</p>
+          <div class="row">{file.chips.map((chip) => <span class={chip.open ? 'chip open' : 'chip'}>{chip.text}</span>)}</div></article>
+    ))}</div></div>
+  ))}
+  <a class="linkrow" href={github} target="_blank" rel="noopener"><span>{copy.github}</span><span class="u">{shown(github)} &#8599;</span></a>
+</div>
+</section>
+</Wrap>

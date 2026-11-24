@@ -165,6 +165,24 @@ const LOG_END = {
 };
 // The episode page's chapters (step 8): the section's last lines; and the router's click handler.
 const CHAPTERS_END = '      pbar.style.setProperty("--at",(secs(t)/secs("13:45")*100).toFixed(1)+"%");\n    });\n  });\n';
+// The subscribe page's slip and the about page's stamp (step 10).
+const TEAR = {
+  desktop: '  /* ---- the tear ---- */\n  var box=document.getElementById("tearbox"),\n      coupon=document.getElementById("coupon"),\n      layer=document.getElementById("tearlayer"),\n'
+    + '      tearBtn=document.getElementById("tearBtn"),\n      said=document.getElementById("said"),\n      email=document.getElementById("email");\n',
+};
+const TAPE = { desktop: '  /* ---- tape the slip back on ---- */\n  $("tapeBtn").addEventListener("click",function(){\n' };
+const TAPE_SAID = {
+  desktop: '    $("said").textContent=""; $("tearBtn").focus({preventScroll:true});\n  });\n',
+  pocket: '  $("tapeBtn").addEventListener("click",function(){box.classList.remove("torn");box.classList.remove("arming");said.textContent="";});\n',
+};
+const STAMP_END = { pocket: '    if(e.isIntersecting){stamp.classList.remove("inked");void stamp.offsetWidth;stamp.classList.add("inked");}});},{threshold:0.9}).observe(stamp);}\n' };
+// The design's script from the line `start` to the first `end` after it, `end` not included.
+function designBetween(script: Script, start: string, end: string): string {
+  const js = designScripts(script);
+  const at = js.indexOf(start);
+  if (at < 0 || js.indexOf(start, at + 1) >= 0) throw new Error(`${script}: expected one ${JSON.stringify(start)}`);
+  return js.slice(at, js.indexOf(end, at));
+}
 const ROUTER_CLICK = '    e.preventDefault(); go(t.getAttribute("data-route"),t.getAttribute("data-then"));\n';
 const putC = (edition: Edition) => '  /* speed (allowed change 4): a leaf\'s --c goes onto the parts that read it */\n'
   + '  var readsC=new WeakMap();\n'
@@ -306,6 +324,24 @@ export const SCRIPT_CHANGES: Change[] = [
     ['    empty.hidden=n>0;\n  });});\n',
       '    empty.hidden=n>0;\n  });});\n  }\n  shelfParts(document); window.addEventListener("st:placed",function(e){shelfParts(e.detail);});\n'],
   ].map(([from, to]): Change => ({ script: 'router', from, to, times: 1, why: 'the writing page\'s shelves are found in each page that has them (step 9, as decided for pages in step 4)' })),
+  // Step 10: the subscribe page's slip and the about page's stamp come back as the other pages'
+  // sections did, each found in the page that has it. The slip shows the four links you approved
+  // in step 7 in place of the design's email form, so the lines that handled the form are left
+  // out (your decision, step 10): its submit handler, and "Tape it back" clearing its status line.
+  // The tear, the pull and the tape stay as written.
+  ...[
+    [TEAR.desktop, `  /* ---- the tear ---- */\n${opens('tearParts', 'tearbox')}${TEAR.desktop.slice('  /* ---- the tear ---- */\n'.length).replaceAll('document.getElementById(', '$(')}`],
+    [TAPE.desktop, `  /* ---- tape the slip back on ---- */\n${opens('tapeParts', 'tapeBtn')}  $("tapeBtn").addEventListener("click",function(){\n`],
+  ].map(([from, to]): Change => ({ script: 'desktop', from, to, times: 1, why: 'the subscribe page\'s slip is found in each page that has it (step 10, as decided for pages in step 4)' })),
+  { script: 'desktop', from: designBetween('desktop', '\n  /* ---- the slip itself ---- */\n', '})();'), to: `\n${closes('tearParts')}`, times: 1, why: 'the slip\'s email form is gone, and its handler with it (your decision, step 10)' },
+  { script: 'desktop', from: TAPE_SAID.desktop, to: `    $("tearBtn").focus({preventScroll:true});\n  });\n${closes('tapeParts')}`, times: 1, why: '"Tape it back" no longer clears the form\'s status line, which is gone (your decision, step 10)' },
+  ...[
+    ['  /* the slip: pull down, or press, to tear */\n', `  /* the slip: pull down, or press, to tear */\n${opens('slipParts', 'tearbox', FIND_ALL)}`],
+    ['  var stamp=$("stamp");\n', `${opens('stampParts', 'stamp')}  var stamp=$("stamp");\n`],
+    [STAMP_END.pocket, `${STAMP_END.pocket}${closes('stampParts')}`],
+  ].map(([from, to]): Change => ({ script: 'pocket', from, to, times: 1, why: 'the subscribe page\'s slip and the about page\'s stamp are found in each page that has them (step 10, as decided for pages in step 4)' })),
+  { script: 'pocket', from: TAPE_SAID.pocket, to: '  $("tapeBtn").addEventListener("click",function(){box.classList.remove("torn");box.classList.remove("arming");});\n', times: 1, why: '"Tape it back" no longer clears the form\'s status line, which is gone (your decision, step 10)' },
+  { script: 'pocket', from: designBetween('pocket', '  $("subForm")', '})();'), to: closes('slipParts'), times: 1, why: 'the slip\'s email form is gone, and its handler with it (your decision, step 10)' },
   // Step 8 (your decision): a link to an item's own page (an episode or an article) carries its
   // design page in data-route and its address in href, and turns to that address; every other
   // link turns to its design page as before.
@@ -328,13 +364,8 @@ export function changedScripts(script: Script): string {
 // the line starting with `from`.
 export type Omission = { script: Script; needs: string } & ({ section: string } | { from: string; lines: number });
 
-export const OMITTED: Omission[] = [
-  { script: 'desktop', needs: 'subscribe', section: '/* ---- the tear ---- */' },
-  { script: 'desktop', needs: 'subscribe', section: '/* ---- the slip itself ---- */' },
-  { script: 'desktop', needs: 'subscribe', section: '/* ---- tape the slip back on ---- */' },
-  { script: 'pocket', needs: 'about', from: 'var stamp=$("stamp");', lines: 3 },
-  { script: 'pocket', needs: 'subscribe', section: '/* the slip: pull down, or press, to tear */' },
-];
+// Every page has its own content since step 10, so nothing is left out any more.
+export const OMITTED: Omission[] = [];
 
 const TITLE = /^ {2}\/\*.*\*\/$/;
 const END = '})();';

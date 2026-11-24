@@ -5,5 +5,5 @@ group: Research and reproductions
 summary: "How the writing system a language uses changes what tokenization costs, aimed at one multilingual small language model."
 tags: ["Tokenization", "Multilingual"]
 inProgress: false
-order: 8
+order: 6
 ---

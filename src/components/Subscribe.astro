@@ -1,0 +1,94 @@
+---
+// The subscribe page in one edition: design-reference/'s subscribe page as written, its words
+// from src/data/subscribe.yaml. Under the slip are the four links you approved in step 7
+// (SlipLinks) in place of the design's email form, and the "elsewhere" rows are the approved
+// link rows for YouTube, GitHub and LinkedIn (LinkRow). The design's tear, pull and tape scripts
+// run as written, less the lines that handled the form (your decision, step 10). Each part is
+// marked data-edition, so edition.js keeps only the edition the width shows.
+import SlipLinks from './SlipLinks.astro';
+import LinkRow from './LinkRow.astro';
+import type { SubscribeContent } from './pages';
+
+interface Props { edition: 'desktop' | 'pocket'; subscribe: SubscribeContent }
+const { edition, subscribe } = Astro.props;
+const { copy, links, elsewhere } = subscribe;
+const desktop = edition === 'desktop';
+const slip = { eyebrow: copy.slip.eyebrow, title: copy.slip.title, text: copy.slip.text, links, tapeBack: copy.slip.tapeBack };
+---
+{desktop ? (
+<Fragment>
+  <div class="stage" data-edition="desktop">
+  <section class="leaf gridded" id="tearoff" data-leaf>
+    <div class="stack" style="gap:28px">
+      <p class="eyebrow">{copy.eyebrow}</p>
+      <h2>{copy.title}</h2>
+      <p class="lede">{copy.lede.desktop}</p>
+
+      <div class="tearbox" id="tearbox">
+        <SlipLinks edition="desktop" {...slip} />
+
+        <div class="tearlayer" id="tearlayer">
+          <div class="half up"><div class="coupon" aria-hidden="true"></div></div>
+          <div class="half dn"><div class="coupon" aria-hidden="true"></div></div>
+        </div>
+
+        <div class="coupon" id="coupon">
+          <div class="stack" style="gap:10px">
+            <p class="eyebrow">{copy.coupon.eyebrow}</p>
+            <h3>{copy.coupon.title}</h3>
+          </div>
+          <div class="perf" aria-hidden="true">
+            <span class="line"></span><span class="txt">tear here</span><span class="line"></span>
+          </div>
+          <div class="btnrow">
+            <button class="btn" id="tearBtn" type="button"><span class="lbl">{copy.coupon.tear.desktop}</span><span class="arrow">&#9986;</span></button>
+          </div>
+          <p style="font-family:var(--mono); font-size:12.5px; color:var(--ink-3)">{copy.coupon.note}</p>
+        </div>
+      </div>
+    </div>
+  </section>
+  </div>
+
+<div class="stage" data-edition="desktop">
+<section class="leaf " id="sub-elsewhere" data-leaf>
+<div class="stack">
+  <p class="eyebrow">{copy.elsewhere.eyebrow}</p>
+  <h2>{copy.elsewhere.title}</h2>
+  {elsewhere.map((row) => <LinkRow label={row.label} href={row.href} />)}
+</div>
+</section>
+</div>
+</Fragment>
+) : (
+<Fragment>
+  <section class="leaf gridded" id="slip" data-leaf data-edition="pocket">
+    <div class="stack">
+      <p class="eyebrow">{copy.eyebrow}</p>
+      <h2>{copy.title}</h2>
+      <p class="lede">{copy.lede.pocket}</p>
+      <div class="tearbox" id="tearbox">
+        <SlipLinks edition="pocket" {...slip} />
+        <div class="tearlayer" id="tearlayer">
+          <div class="half up"><div class="coupon" aria-hidden="true"></div></div>
+          <div class="half dn"><div class="coupon" aria-hidden="true"></div></div>
+        </div>
+        <div class="coupon" id="coupon">
+          <p class="eyebrow">{copy.coupon.eyebrow}</p>
+          <h3>{copy.coupon.title}</h3>
+          <div class="perf" aria-hidden="true"><span class="line"></span><span class="txt">tear here</span><span class="line"></span></div>
+          <button class="btn pull" id="tearBtn" type="button"><span>{copy.coupon.tear.pocket}</span><span class="arrow">&#8595;</span></button>
+          <p class="small">{copy.coupon.note}</p>
+        </div>
+      </div>
+    </div>
+  </section>
+<section class="leaf " id="sub-elsewhere" data-leaf data-edition="pocket">
+<div class="stack">
+  <p class="eyebrow">{copy.elsewhere.eyebrow}</p>
+  <h2>{copy.elsewhere.title}</h2>
+  {elsewhere.map((row) => <LinkRow label={row.label} href={row.href} />)}
+</div>
+</section>
+</Fragment>
+)}

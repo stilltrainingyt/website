@@ -1,5 +1,7 @@
 ---
-// Every address the site does not have: the design's missing page, empty until step 10 ports it.
+// Every address the site does not have: both editions of the design's torn-out page
+// (Missing.astro).
 import Journal from '../layouts/Journal.astro';
+import Missing from '../components/Missing.astro';
 ---
-<Journal page="missing" />
+<Journal page="missing"><Missing edition="desktop" /><Missing edition="pocket" /></Journal>

@@ -1,8 +1,8 @@
 /* The pocket edition's script from design-reference/pocket.html, run only below 900 px
    wide. It differs from the design only as tests/visual/port.ts lists: the allowed changes
    (among them the speed change: each leaf's --c written onto the parts that read it), each
-   page's parts found again in every page a turn places (router.js), and lines left out until
-   the page they need arrives. */
+   page's parts found again in every page a turn places (router.js), and the slip's email form
+   handling left out, the form being gone (step 10). */
 if(!window.matchMedia("(min-width:900px)").matches){
 (function(){
   "use strict";
@@ -70,6 +70,14 @@ if(!window.matchMedia("(min-width:900px)").matches){
   function ask(){if(!queued){queued=true;requestAnimationFrame(run);}}
   window.addEventListener("scroll",ask,{passive:true}); window.addEventListener("resize",ask,{passive:true}); run();
   window.addEventListener("st:placed",function(){leaves=all("[data-leaf]");run();});
+  function stampParts(scope){
+  var $=function(id){return scope.querySelector("#"+id);};
+  if(!$("stamp"))return;
+  var stamp=$("stamp");
+  if(!reduce&&window.IntersectionObserver){new IntersectionObserver(function(es){es.forEach(function(e){
+    if(e.isIntersecting){stamp.classList.remove("inked");void stamp.offsetWidth;stamp.classList.add("inked");}});},{threshold:0.9}).observe(stamp);}
+  }
+  stampParts(document); window.addEventListener("st:placed",function(e){stampParts(e.detail);});
 
   /* Echo */
   function echoParts(scope){
@@ -233,5 +241,31 @@ if(!window.matchMedia("(min-width:900px)").matches){
   }
   folderParts(document); window.addEventListener("st:placed",function(e){folderParts(e.detail);});
 
+  /* the slip: pull down, or press, to tear */
+  function slipParts(scope){
+  var $=function(id){return scope.querySelector("#"+id);}, all=function(s,c){return Array.prototype.slice.call((c||scope).querySelectorAll(s));};
+  if(!$("tearbox"))return;
+  var box=$("tearbox"), coupon=$("coupon"), tearBtn=$("tearBtn"), email=$("email"), said=$("said"), halves=all("#tearlayer .half");
+  function jagged(){var pts=[],x=0; while(x<100){pts.push([x,50+Math.random()*8]); x+=4+Math.random()*5;} pts.push([100,50+Math.random()*8]);
+    function s(a){return a.map(function(p){return p[0].toFixed(2)+"% "+p[1].toFixed(2)+"%";}).join(",");}
+    return {top:"polygon(0% 0%,100% 0%,"+s(pts.slice().reverse())+")", bot:"polygon("+s(pts)+",100% 100%,0% 100%)"};}
+  function tear(){
+    if(box.classList.contains("torn")||box.classList.contains("arming"))return;
+    coupon.style.setProperty("--pull","0"); var html=coupon.innerHTML, cut=jagged();
+    halves.forEach(function(h,i){var c=h.querySelector(".coupon"); c.innerHTML=html; all("[id]",c).forEach(function(e){e.removeAttribute("id");});
+      var cp=i===0?cut.top:cut.bot; h.style.clipPath=cp; h.style.webkitClipPath=cp;});
+    box.classList.add("arming");
+    requestAnimationFrame(function(){requestAnimationFrame(function(){box.classList.add("torn");});});
+  }
+  var py0=null, moved=0;
+  tearBtn.addEventListener("pointerdown",function(e){py0=e.clientY;moved=0;try{tearBtn.setPointerCapture(e.pointerId);}catch(_){}});
+  tearBtn.addEventListener("pointermove",function(e){if(py0===null)return; moved=Math.max(0,e.clientY-py0); coupon.style.setProperty("--pull",String(Math.min(moved,140)));
+    if(moved>90){py0=null;tear();}});
+  function rel(){py0=null;coupon.style.setProperty("--pull","0");}
+  tearBtn.addEventListener("pointerup",rel); tearBtn.addEventListener("pointercancel",rel);
+  tearBtn.addEventListener("click",function(){tear();});
+  $("tapeBtn").addEventListener("click",function(){box.classList.remove("torn");box.classList.remove("arming");});
+  }
+  slipParts(document); window.addEventListener("st:placed",function(e){slipParts(e.detail);});
 })();
 }

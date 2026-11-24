@@ -7,5 +7,6 @@ tags: ["Local AI"]
 inProgress: false
 order: 1
 cabinet:
+  place: 1
   tags: ["Desktop", "Local AI"]
 ---

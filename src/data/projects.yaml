@@ -1,0 +1,15 @@
+# The projects page's words. The groups, kinds, titles, summaries and tags come from the files in
+# src/content/projects/; the GitHub link is githubPersonal in site.json.
+projects:
+  eyebrow: Projects
+  title: Things I have built, or am building
+  # Under the title: one line for several projects ({count} is the number in words, "Eleven"),
+  # one for a single project, one for none.
+  lede:
+    some: "{count} files. Some are finished, some are still open on the desk."
+    one: One file. It is still open on the desk.                       # DRAFT (step 10): for you to edit
+    none: No files yet. Each one goes on the desk as it is started.    # DRAFT (step 10): for you to edit
+  group: "{group} · {count}"          # over each group: its name and how many projects it holds
+  inProgress: In progress             # the chip on a project still in progress
+  empty: Nothing filed on this shelf yet.   # shown when there are no projects
+  github: Public code on GitHub

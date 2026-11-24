@@ -1,0 +1,138 @@
+---
+// The about page in one edition: design-reference/'s about page as written, its intro, reader's
+// card and rules from src/data/about.yaml. The colophon draws the design itself (its colours,
+// fonts, keys and grid), so it stays as the design wrote it; it already names the display font
+// the design uses, Fraunces 700. The pocket edition's "Dark paper" control is the design's, and
+// its script writes its words. Each part is marked data-edition, so edition.js keeps only the
+// edition the width shows.
+import { aboutWords } from './pages';
+
+interface Props { edition: 'desktop' | 'pocket' }
+const desktop = Astro.props.edition === 'desktop';
+const copy = await aboutWords();
+---
+{desktop ? (
+<Fragment>
+<div class="stage" data-edition="desktop">
+<section class="leaf gridded" id="about-me" data-leaf>
+<div class="stack">
+  <div class="row between"><p class="eyebrow">{copy.eyebrow}</p></div>
+  <h2>{copy.title}</h2>
+  <div class="aboutpair">
+    <div class="stack">
+      <p class="lede">{copy.lede}</p>
+      {copy.paragraphs.map((p) => <p>{p}</p>)}
+    </div>
+    <div class="idcard"><p class="idhead">{copy.card.head}</p>{copy.card.rows.map((r) => <div class="idrow"><span class="lab">{r.label}</span><span>{r.text}</span></div>)}</div>
+  </div>
+</div>
+</section>
+</div>
+<div class="stage" data-edition="desktop">
+<section class="leaf " id="about-rules" data-leaf>
+<div class="stack">
+  <p class="eyebrow">{copy.rules.eyebrow}</p>
+  <h2>{copy.rules.title}</h2>
+  <div class="principles">{copy.rules.list.map((rule) => <p class="pnote">{rule}</p>)}</div>
+</div>
+</section>
+</div>
+  <div class="stage" data-edition="desktop">
+  <section class="leaf" id="colophon" data-leaf>
+    <span class="ring" style="left:-46px; top:-34px" aria-hidden="true"></span>
+    <div class="stack">
+      <p class="eyebrow">About &middot; colophon</p>
+      <h2>How the pages are built</h2>
+      <div class="pair flip">
+        <div class="stack">
+          <div class="swatches" aria-hidden="true">
+            <span class="sw" style="background:#f8f9fa; color:#212529">f8f9fa</span>
+            <span class="sw" style="background:#e9ecef; color:#212529">e9ecef</span>
+            <span class="sw" style="background:#dee2e6; color:#212529">dee2e6</span>
+            <span class="sw" style="background:#ced4da; color:#212529">ced4da</span>
+            <span class="sw" style="background:#adb5bd; color:#212529">adb5bd</span>
+            <span class="sw" style="background:#6c757d; color:#f8f9fa">6c757d</span>
+            <span class="sw" style="background:#495057; color:#f8f9fa">495057</span>
+            <span class="sw" style="background:#343a40; color:#f8f9fa">343a40</span>
+            <span class="sw" style="background:#212529; color:#f8f9fa">212529</span>
+            <span class="sw" style="background:#342a2a; color:#f8f9fa">342a2a</span>
+          </div>
+          <p style="font-family:var(--mono); font-size:12.5px; color:var(--ink-3)">
+            Light Steel, nine steps, plus the one warm hue. Never pure white as a ground.</p>
+        </div>
+        <div class="spec">
+          <div class="row"><span class="k">Display</span><span class="v" style="font-family:var(--display); font-weight:700; font-size:23px">Fraunces 700</span></div>
+          <div class="row"><span class="k">Body</span><span class="v" style="font-size:18px">IBM Plex Sans, 400 and 600</span></div>
+          <div class="row"><span class="k">Data</span><span class="v" style="font-family:var(--mono); font-size:16px">IBM Plex Mono 400</span></div>
+          <div class="row"><span class="k">Marginalia</span><span class="v hand" style="font-size:22px">Architects Daughter</span></div>
+          <div class="row"><span class="k">Accent</span><span class="v"><span class="chip solid">#342a2a</span> &nbsp;near-black, unmistakably warm</span></div>
+          <div class="row"><span class="k">Keys</span><span class="v">1 to 6 open the pages. Arrow keys move a loose note.</span></div>
+          <div class="row" style="border-bottom:0"><span class="k">Grid</span><span class="v">24 px minor, 120 px major, grain at 7%</span></div>
+        </div>
+      </div>
+      <hr class="hr thin">
+      <div class="colophon">
+        <div class="stack" style="gap:8px">
+          <p class="sig">Still Training</p>
+          <p style="font-family:var(--mono); font-size:12.5px; color:var(--ink-3)">Always one more episode. &nbsp;&middot;&nbsp; Echo, pictured, is the channel&rsquo;s dolphin.</p>
+        </div>
+        <div class="stamp" data-drag aria-hidden="true">
+          <div>
+            <p class="sm">established</p>
+            <div class="rule"></div>
+            <p class="big">STILL<br>TRAINING</p>
+            <div class="rule"></div>
+            <p class="sm">MMXXVI</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+  </div>
+</Fragment>
+) : (
+<Fragment>
+<section class="leaf gridded" id="about-me" data-leaf data-edition="pocket">
+<div class="stack">
+  <div class="row between"><p class="eyebrow">{copy.eyebrow}</p><button class="mini" type="button" data-theme-toggle aria-pressed="false">Dark paper</button></div>
+  <h2>{copy.title}</h2>
+  <div class="aboutpair">
+    <div class="stack">
+      <p class="lede">{copy.lede}</p>
+      {copy.paragraphs.map((p) => <p>{p}</p>)}
+    </div>
+    <div class="idcard"><p class="idhead">{copy.card.head}</p>{copy.card.rows.map((r) => <div class="idrow"><span class="lab">{r.label}</span><span>{r.text}</span></div>)}</div>
+  </div>
+</div>
+</section>
+<section class="leaf " id="about-rules" data-leaf data-edition="pocket">
+<div class="stack">
+  <p class="eyebrow">{copy.rules.eyebrow}</p>
+  <h2>{copy.rules.title}</h2>
+  <div class="principles">{copy.rules.list.map((rule) => <p class="pnote">{rule}</p>)}</div>
+</div>
+</section>  <section class="leaf" id="kit" data-leaf data-edition="pocket">
+    <div class="stack">
+      <p class="eyebrow">About &middot; colophon</p>
+      <h2>How the pages are built</h2>
+      <div class="swatches" aria-hidden="true">
+        <span class="sw" style="background:#f8f9fa; color:#212529">f8f9fa</span><span class="sw" style="background:#e9ecef; color:#212529">e9ecef</span>
+        <span class="sw" style="background:#dee2e6; color:#212529">dee2e6</span><span class="sw" style="background:#ced4da; color:#212529">ced4da</span>
+        <span class="sw" style="background:#adb5bd; color:#212529">adb5bd</span><span class="sw" style="background:#6c757d; color:#f8f9fa">6c757d</span>
+        <span class="sw" style="background:#495057; color:#f8f9fa">495057</span><span class="sw" style="background:#343a40; color:#f8f9fa">343a40</span>
+        <span class="sw" style="background:#212529; color:#f8f9fa">212529</span><span class="sw" style="background:#342a2a; color:#f8f9fa">342a2a</span>
+      </div>
+      <div class="spec">
+        <div class="srow"><span class="k">Display</span><span style="font-family:var(--display); font-weight:700; font-size:22px">Fraunces 700</span></div>
+        <div class="srow"><span class="k">Body</span><span>IBM Plex Sans, 400 and 600</span></div>
+        <div class="srow"><span class="k">Data</span><span style="font-family:var(--mono)">IBM Plex Mono 400</span></div>
+        <div class="srow"><span class="k">Touch</span><span>Every control is at least 48 px tall. The index sits under the thumb.</span></div>
+      </div>
+      <div class="row between">
+        <div class="stack" style="gap:6px"><p class="sig">Still Training</p><p class="small">Always one more episode.</p></div>
+        <div class="stamp" id="stamp" aria-hidden="true"><div><p class="sm">established</p><p class="big">STILL<br>TRAINING</p><p class="sm">MMXXVI</p></div></div>
+      </div>
+    </div>
+  </section>
+</Fragment>
+)}

@@ -2,8 +2,8 @@
    run only from 900 px wide. They differ from the design only as tests/visual/port.ts lists:
    the allowed changes (among them the speed change: each leaf's --c written onto the parts
    that read it), the paper choice saved in pocket's format, each page's parts found again in
-   every page a turn places (router.js), and lines left out until the page they need
-   arrives. */
+   every page a turn places (router.js), and the slip's email form handling left out, the
+   form being gone (step 10). */
 if(window.matchMedia("(min-width:900px)").matches){
 (function(){
   "use strict";
@@ -106,6 +106,45 @@ if(window.matchMedia("(min-width:900px)").matches){
     echoTiltParts(wrap,echoes); window.addEventListener("st:placed",function(e){echoTiltParts(e.detail.querySelector("#echoWrap"),[e.detail.querySelector("#echoLt"),e.detail.querySelector("#echoDk")]);});
   }
 
+  /* ---- the tear ---- */
+  function tearParts(scope){
+  var $=function(id){return scope.querySelector("#"+id);};
+  if(!$("tearbox"))return;
+  var box=$("tearbox"),
+      coupon=$("coupon"),
+      layer=$("tearlayer"),
+      tearBtn=$("tearBtn"),
+      said=$("said"),
+      email=$("email");
+  var halves=layer.querySelectorAll(".half");
+
+  function jagged(){
+    // one irregular rip, shared by both halves so the edges interlock
+    var pts=[], x=0;
+    while(x<100){ pts.push([x, 46+Math.random()*9]); x+=3+Math.random()*4.5; }
+    pts.push([100, 46+Math.random()*9]);
+    var fwd=pts.map(function(p){return p[0].toFixed(2)+"% "+p[1].toFixed(2)+"%";}).join(",");
+    var bwd=pts.slice().reverse().map(function(p){return p[0].toFixed(2)+"% "+p[1].toFixed(2)+"%";}).join(",");
+    return {top:"polygon(0% 0%,100% 0%,"+bwd+",0% 0%)", bot:"polygon("+fwd+",100% 100%,0% 100%)"};
+  }
+
+  tearBtn.addEventListener("click",function(){
+    if(box.classList.contains("torn")||box.classList.contains("arming"))return;
+    var html=coupon.innerHTML;
+    var cut=jagged();
+    halves[0].querySelector(".coupon").innerHTML=html;
+    halves[1].querySelector(".coupon").innerHTML=html;
+    halves[0].style.clipPath=cut.top; halves[0].style.webkitClipPath=cut.top;
+    halves[1].style.clipPath=cut.bot; halves[1].style.webkitClipPath=cut.bot;
+    box.classList.add("arming");
+    requestAnimationFrame(function(){requestAnimationFrame(function(){
+      box.classList.add("torn");
+      setTimeout(function(){ if(email)email.focus(); },reduce?10:520);
+    });});
+  });
+
+  }
+  tearParts(document); window.addEventListener("st:placed",function(e){tearParts(e.detail);});
 })();
 
 (function(){
@@ -343,6 +382,17 @@ if(window.matchMedia("(min-width:900px)").matches){
   });
   }
   logParts(document); window.addEventListener("st:placed",function(e){logParts(e.detail);});
+
+  /* ---- tape the slip back on ---- */
+  function tapeParts(scope){
+  var $=function(id){return scope.querySelector("#"+id);};
+  if(!$("tapeBtn"))return;
+  $("tapeBtn").addEventListener("click",function(){
+    var box=$("tearbox"); box.classList.remove("torn"); box.classList.remove("arming");
+    $("tearBtn").focus({preventScroll:true});
+  });
+  }
+  tapeParts(document); window.addEventListener("st:placed",function(e){tapeParts(e.detail);});
 
   /* ---- number keys jump between entries ---- */
   var ids=["cover","premise","tracks","byhand","log","files","tearoff","colophon"];

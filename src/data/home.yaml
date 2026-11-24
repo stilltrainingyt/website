@@ -9,9 +9,11 @@ home:
       desktop: Field journal · vol. 01 · no. 1
       pocket: Pocket edition · vol. 01
     title: [Still, Training]
+    # DRAFT (step 10): for you to edit. The design's line was "A channel about how machine
+    # learning actually works".
     lede:
-      desktop: Always one more episode. A channel about how machine learning actually works — built from first principles, on graph paper, at the speed of someone still learning it.
-      pocket: Always one more episode. How machine learning actually works, built from first principles on graph paper.
+      desktop: Always one more episode. A notebook on careers, skills, AI, research and the things I build — worked from first principles, on graph paper, at the speed of someone still learning it.
+      pocket: Always one more episode. Careers, skills, AI and research, worked from first principles on graph paper.
     syllabus: Open the syllabus
     episodes: See the episodes        # desktop only
     byHand: Try one idea by hand      # pocket only
@@ -22,9 +24,10 @@ home:
       desktop: Entry 01 · the premise
       pocket: Page 01 · the premise
     title: Teaching the thing while I learn the thing
+    # DRAFT (step 10): for you to edit. The design's entry spoke of machine learning only.
     intro:
-      desktop: Most explanations of machine learning start three ideas too late. They assume you already accept that a loss is a surface, that a gradient points somewhere useful, that a token is a sensible unit. This channel starts earlier than that and never skips a step, because the person making it needs every step too.
-      pocket: Most explanations of machine learning start three ideas too late. This channel starts earlier and never skips a step, because the person making it needs every step too.
+      desktop: Most explanations start three ideas too late. They assume you already know why a gradient points somewhere useful, how a paper earns its headline number, why a skill is worth the hours it takes. This channel starts earlier than that and never skips a step, because the person making it needs every step too.
+      pocket: Most explanations start three ideas too late. This channel starts earlier and never skips a step, because the person making it needs every step too.
     pad:
       intro: "Every episode turns the same four pages, in the same order. Here they are for one idea, the gradient:"
       pages:
@@ -80,10 +83,10 @@ home:
         backNumber:
           desktop: Track 01 · the back of the card
           pocket: Track 01 · the back
-        outcomes:
-          - Work one training step out on paper
-          - Say what a token is without the word “token”
-          - Read a loss curve and tell what went wrong
+        outcomes:                     # DRAFT (step 10): for you to edit
+          - Work one idea out on paper, from zero
+          - Explain it without the jargon
+          - Spot when an explanation skips a step
         needs: "needs: basic arithmetic"
       course:
         number: Track 02 · 25–50 min
@@ -93,23 +96,24 @@ home:
         backNumber:
           desktop: Track 02 · the back of the card
           pocket: Track 02 · the back
-        outcomes:
-          - Write a training loop with no tutorial open
-          - Pick a quantization level and say what it costs
-          - Fit a large model into the memory you have
+        outcomes:                     # DRAFT (step 10): for you to edit
+          - Work every unit’s numericals yourself
+          - Write the unit’s code with no tutorial open
+          - Pass the check at the end of each unit
         needs: "needs: track 01"
       e3:
         number: Track 03 · 15–30 min
-        about: Reading a paper out loud, reproducing it on real hardware, reporting what broke.
+        # DRAFT (step 10): for you to edit. The design's line described paper reproductions only.
+        about: A first look, a long journey through one subject, or something built and tested by hand.
         chip: Open notebook
         look: open
         backNumber:
           desktop: Track 03 · the back of the card
           pocket: Track 03 · the back
-        outcomes:
-          - Find the one equation a paper depends on
-          - Reproduce a headline number, or say why not
-          - Tell a real result from a lucky run
+        outcomes:                     # DRAFT (step 10): for you to edit
+          - Size up a new tool, fact or question
+          - Follow one subject from start to finish
+          - Reproduce a result, or say why not
         needs: "needs: patience"
 
   byHand:

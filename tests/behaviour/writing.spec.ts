@@ -15,7 +15,7 @@ const ORIGIN = fixtureOrigin('article');
 const WRITING = `${ORIGIN}/writing/`;
 const ARTICLE = `${ORIGIN}/writing/gradient-descent-by-hand/`;
 const EPISODE = `${ORIGIN}/episodes/gradient-descent-by-hand/`;
-const EMPTY = `${fixtureOrigin('writing-empty')}/writing/`;
+const EMPTY = `${fixtureOrigin('launch')}/writing/`;
 
 function watchErrors(page: Page): string[] {
   const errors: string[] = [];
